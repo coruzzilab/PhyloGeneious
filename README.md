@@ -27,17 +27,17 @@ The pipeline uses various programs to complete the analysis. Please make sure to
 - Make sure there are no special characters in the sequence headers (e.g. "@","-") or in the peptid sequences (e.g. "*" stop codons).
 
 #### config file:
+1. Required arguments:
+- INGROUP= 	List of species short names for the ingroup taxa, separated by spaces.
+- OUTGROUP= 	At least one species short name for an outgroup taxon (multiple outgroup taxa should be space-separated)
+- HPC=  		S (slurm) or P (pbs) - which job scheduling system is supported by the HPC system.
+2. Not required but recommended:
+- NCPU=  		Number of cpus to ask for starting a BLAST or TNT type job.
+- MAXQS= 		Number of process to run simultaneously - nominally BLAST and TNT jobs.
+- TNTA=  		Lowest family size to be pooled in a group job running TNT.
+- TNTB=  		Family size requiring a stand-alone process to run TNT.
+- BLSTMIN=  	Number of minutes for an average BLAST job to run.
+        
+### Disclamer:
+- This pipeline is under development and only been tested and used on New York University's HPC cluster (Slurm and PBS job schedulers). While it is likely to work on PBS or Slurm HPC systems, it is not guaranteed.
 
-
-
-
-Required arguments:
-        INGROUP= 	List of taxa labels (faa files without the suffix) for the ingroup taxa separated by spaces.
-        OUTGROUP= 	At least one faa file (without suffix) for an outgroup taxon.
-        HPC=  		S (slurm) or P (pbs) - which job scheduling system is supported by the HPC system.
-Not required but recommended:
-        NCPU=  		Number of cpus to ask for starting a BLAST or TNT type job.
-        MAXQS= 		Number of process to run simultaneously - nominally BLAST and TNT jobs.
-        TNTA=  		Lowest family size to be pooled in a group job running TNT.
-        TNTB=  		Family size requiring a stand-alone process to run TNT.
-        BLSTMIN=  	Number of minutes for an average BLAST job to run.
