@@ -80,12 +80,15 @@ export OID_HOME=/path/to/PhyloGeneious/folder
 export OID_USER_DIR=/path/to/project/folder
 
 \# "-m" for setting a minmum cutoff for number of taxa per ortholog group, for that ortholog group to be included in concatenated matrix:
+
 perl $OID_HOME/bin/orth2matrix.pl -m 10
 
 \# "-x" to exclude a given taxa from the concatenated matrix (for tree search). Multiple taxa can be indicated (comma-seperated):
+
 perl $OID_HOME/bin/orth2matrix.pl -x Aratha
 
 \# "-O" flag will remove all partitions that do not contain a sequence from the outgroup:
+
 perl $OID_HOME/bin/orth2matrix.pl -O
 
 
