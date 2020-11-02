@@ -1,0 +1,5 @@
+INGROUP=Apleuropneumoniae10D13039 Aminor202 Asuccinogenes130Z AactinomycetD11S1 AaphrophilusNJ8700 GanatisUMN179 HaegyptiusATCC11116 Hducreyi35000HP Hinfluenzae22121 HinfluenzaeRdKW20 HparainfATCC33392 Hparasuis29755 Hsomnus129PT MhaemolyticaA2BOV Msuccinici PdagmatisATCC43325 PmultocidaPm70
+OUTGROUP=EcoliK12MG1655
+NCPU=1
+VERBOSE=2
+DEBUG=1

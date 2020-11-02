@@ -1,0 +1,60 @@
+new extra qsbstg.pl system that allows using part file for any blast uses:
+Blstq.pm : library with new runs
+run_mk_blastqS.sh : shell to creat procs for sbatch (SLURM)
+run_blastq.pl : runs a blast part
+new_blast_partq.pl :runs sample for blast
+mk_blast_partq.pl :called by new_blast_partq.pl for detailed sample
+qsblastg.pl : monitor program for blasts 
+    this takes same args as qsblast to overide config
+    -g is # of gb for blast, -w wall hours, -n num_thr  
+    it also takes a positional arg: number of parts (which is otherwize computed)
+--- requires a blastcfg file in OID_USER_DIR to configure
+entries:
+HPC=          "S" for slurm    required
+BLAST=         blast type - defalt blastp
+BLASTDIR=      output directory for blast required
+DBDIR=         directory of database file(s)
+DB=            list of database names (assume already converted)  required
+COMBIN         path to query file - user should combine all fa files into single file required
+COMBOUT        combined output file - defaults to comb.blst
+NTHR           number of blast threads(16)
+MEM            mem to request(16GB)
+EVAL           evalue (1e-10)
+BLIST_MIN      approximate time for each blast thread in minutes(60) 
+MAXQS          max sbatch jobs to submit (10)
+VERBOSE        ignored for now - trace level
+PARAM          this string is added to the blast command ie -outfmt 6
+--------------------------
+suggested proc:
+#!/bin/bash
+#SBATCH -o %J.out
+#SBATCH -c 4
+#SBATCH --mem 16GB
+#SBATCH -n 1
+echo job $SLURM_JOBID ncpu $SLURM_CPUS_PER_TASK
+$OID_HOME/bin/new_blast_partq.pl
+$OID_HOME/bin/qsblastg.pl -g 16 -n 12 -w 12 
+
+--------------- sample blastcfg  - I used a db in blastdb for this test
+HPC=S
+BLAST=blastp
+BLASTDIR=blastq
+COMBIN=blastq/combined.fa
+COMBOUT=combined.blst
+PARAM= -outfmt 6
+EVAL=1e-10
+NTHR=12
+DBDIR=blastdb
+DB=Aminor202
+------------- this creates blast output in subdirector blastq under OID_USER_DIR
+this is the blast command created:
+ blastp -db blastdb/Aminor202 -query blastq/Part1.faa -evalue 1e-10 -num_threads 12  -out blastq/Aminor202.Part1.blst -outfmt 6
+qsblast submits this job to run blast:
+sbatch -n 1 -c 12 -t 12:00:00 --mem 16GB  /scratch/cmz209/orthotnt/sluTest1/run_blastq_job.sh  1 12 2>/dev/null
+
+run_blastq_job.sh is created by new_blast_partq.pl -:
+#!/bin/bash
+#SBATCH -o log/job/%J.out
+
+echo $SLURM_JOBID has $SLURM_CPUS_PER_TASK cpus
+/home/cmz209/orthotnt/bigplant_v4/bin/run_blastq.pl $1 $2

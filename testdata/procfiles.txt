@@ -1,0 +1,113 @@
+CUTOFF=20
+log +oid.log;
+taxname=;
+taxname +64;
+report +200
+nstates 32;
+mxram 2000;
+p oid.nex;
+watch=;
+echo=;
+riddup;
+xi;
+mult = tbr replic 20 hol10;
+riddup-;
+taxname ];
+riddup;
+xi;
+nel*;
+riddup-;
+tchoose/;
+tsave oids.tre;
+save /;
+tsave /;
+export - oid.tre;
+log /
+system >.tre.done
+zzz;
+proc;
+CUTOFF=150
+log +oid.log;
+taxname=;
+taxname +64;
+report +200
+nstates 32;
+mxram 2000;
+sect:slack 50 xbuf recurse 5 xss fuse 5 starts 5;
+rat:iter100up4do4;
+p oid.nex;
+watch=;
+echo=;
+rs0;
+rs *;
+col3;
+hold 100;
+xmult:rep 5  drift 12 fuse 6  level 6 chklevel +1 1;
+xmult: rat 5 hol1;
+sect:;
+xmult:;
+riddup;
+xi;
+xmult = rep5 hol2;
+tf;
+riddup-;
+sort;
+score;
+taxname ];
+riddup;
+xi;
+nel*;
+riddup-;
+tchoose/;
+tsave oids.tre;
+save /;
+tsave /;
+export - oid.tre;
+log /;
+system >.tre.done
+zzz;
+proc;
+CUTOFF=300
+log +oid.log;
+taxname=;
+taxname +64;
+report +200
+nstates 32;
+mxram 2000;
+sect:slack 50 xbuf recurse 5 xss fuse 5 starts 5;
+rat:iter100up4do4;
+p oid.nex;
+watch=;
+echo=;
+rs0;
+rs *;
+col3;
+hold 100;
+xmult:rep 5  drift 12 fuse 6  level 6 chklevel +1 1;
+xmult: rat 5 hol1;
+sect:;
+xmult:;
+riddup;
+xi;
+xmult = rep5 hol2;
+riddup-;
+riddup;
+xi;
+tf;
+riddup-;
+sort;
+score;
+taxname ];
+riddup;
+xi;
+nel*;
+riddup-;
+tchoose/;
+tsave oids.tre;
+save /;
+tsave /;
+export - oid.tre;
+log /;
+system >.tre.done
+zzz;
+proc;
