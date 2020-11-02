@@ -75,6 +75,7 @@ The pipeline will identify the ortholog groups and create concatenated matrices 
 These output files can be recreated if some modifications are required using the PhyloGeneious/bin/orth2matrix.pl script (note that it usually requires a lot of memory, so run it on a high memory node. Usually ≥128GB, or even 250GB, depends of the size of the data set), e.g.:
 
 export OID_HOME=/path/to/PhyloGeneious/folder
+
 export OID_USER_DIR=/path/to/project/folder
 
 \# "-m" for setting a minmum cutoff for number of taxa per ortholog group, for that ortholog group to be included in concatenated matrix:
@@ -85,11 +86,6 @@ perl $OID_HOME/bin/orth2matrix.pl -x Aratha
 
 \# "-O" flag will remove all partitions that do not contain a sequence from the outgroup:
 perl $OID_HOME/bin/orth2matrix.pl -O
-
-
-
-
-The concatenated matrices can be recreated using the PhyloGeneious/bin/orth2matrix.pl script (e.g. to change the minimum cutoff of number of taxa per ortholog group to be included in concatenated matrix, or to exclude some of the taxa, etc. - see the script for more details)
 
 
 ### Disclamer:
