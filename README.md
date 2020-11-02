@@ -47,6 +47,7 @@ export OID_MCL=6
 
 #### Running command:
 Once you set all the above, including the environment variables, type the following command to start the analysis:
+
 nohup sh $OID_HOME/bin/topshell.sh > run.log 2>&1 &
 
 #### Some notes:
