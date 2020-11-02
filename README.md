@@ -3,6 +3,9 @@
 
 PhyloGeneious is an improved version of the OrthologID pipeline, optimized for HPC clusters (Works on Slurm and PBS job schedulers).
 
+![Image of Yaktocat](https://github.com/coruzzilab/PhyloGeneious/Pipeline_steps.pdf)
+
+
 ### Dependencies:
 The pipeline uses various programs to complete the analysis. Please make sure to install the following programs and add them to your $PATH variable:
 1.  BLAST+
