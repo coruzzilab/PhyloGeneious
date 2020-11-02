@@ -37,7 +37,15 @@ The pipeline uses various programs to complete the analysis. Please make sure to
 - TNTA=  		Lowest family size to be pooled in a group job running TNT.
 - TNTB=  		Family size requiring a stand-alone process to run TNT.
 - BLSTMIN=  	Number of minutes for an average BLAST job to run.
-        
+
+#### Environment variables:
+- Use the "$OID_HOME" and "$OID_USER_DIR" environment variables to indicate the path to the PhyloGeneious folder (code) and to your project working directory, respectively (You have to do that before initiating a run):
+export OID_HOME=/path/to/PhyloGeneious/folder
+export OID_USER_DIR=/path/to/project/folder
+- For large analyses (usually above 30 taxa), you can increase the amount of requested memory per CPU (default 2GB per CPU), using the $OID_MCL variable, e.g.:
+export OID_MCL=6 
+
+
 ### Disclamer:
 - This pipeline is under development and only been tested and used on New York University's HPC cluster (Slurm and PBS job schedulers). While it is likely to work on PBS or Slurm HPC systems, it is not guaranteed.
 
