@@ -15,7 +15,7 @@ The pipeline uses various programs to complete the analysis. Please make sure to
 ### Run setup:
 1. Create a project folder
 2. Copy the "procfiles.txt" and "config" files from the provided testdata folder to your project folder.
-- The "procfiles.txt" contains instructions for building the gene family trees with TNT.
+   - The "procfiles.txt" contains instructions for building the gene family trees with TNT.
 3. Create a "blastdb" subfolder in your project folder. This folder should include all the protein sequences (a fasta file) for each of the included species (see instructions below)
 
 
