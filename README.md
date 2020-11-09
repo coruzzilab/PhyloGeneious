@@ -101,7 +101,7 @@ A. Data entry issues: Issues with data correctness and completeness can cause th
 
 1. Protein sequence files have to be in FASTA format and need to have a name that ends in .faa The pipeline does not recognize files that have a different name such as .fas OR .fasta
 
-2. The species name (e.g., SPECIES1) has to be identical in all three places: 1. config file where INGROUP and OUTGROUP are specified. 2. File name for fasta file (SPECIES1.faa) and 3. sequence headers in Fasta file (e.g., >SPECIES1#xxxxx) 
+2. The species short name (e.g., SPECIES1) has to be identical in all three places: 1. config file where INGROUP and OUTGROUP are specified. 2. File name for fasta file (SPECIES1.faa) and 3. sequence headers in Fasta file (e.g., >SPECIES1#xxxxx) 
 
 B. Pipeline customization: Compute clusters come in all sizes and configurations, with key differences in job management software, walltime limits, memory limits etc. It's impossible to have the pipeline auto-adjust to all these settings. So, please make sure the pipeline is customized for your cluster by doing the following:
 
