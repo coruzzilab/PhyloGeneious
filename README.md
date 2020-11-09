@@ -95,6 +95,25 @@ perl $OID_HOME/bin/orth2matrix.pl -x Aratha
 perl $OID_HOME/bin/orth2matrix.pl -O
 
 
+### Troubleshooting:
+
+A. Data entry issues: Issues with data correctness and completeness can cause the pipeline to fail in certain cases. Here are some common issues:
+
+1. Protein sequence files have to be in FASTA format and need to have a name that ends in .faa The pipeline does not recognize files that have a different name such as .fas OR .fasta
+
+2. The species name (e.g., SPECIES1) has to be identical in all three places: 1. config file where INGROUP and OUTGROUP are specified. 2. File name for fasta file (SPECIES1.faa) and 3. sequence headers in Fasta file (e.g., >SPECIES1#xxxxx) 
+
+B. Pipeline customization: Compute clusters come in all sizes and configurations, with key differences in job management software, walltime limits, memory limits etc. It's impossible to have the pipeline auto-adjust to all these settings. So, please make sure the pipeline is customized for your cluster by doing the following:
+
+1. Provide a template job submission script in $OID_HOME/bin/ For clusters using SLURM job management, name this file pipe.slu and if cluster uses PBS, name the file pipe.pbs In either case, this file should include all the arguments typically provided to the job manager. Example scripts are provided in the distribution and should be edited to fit your cluster.
+
+2. In the file $OID_HOME/bin/run_pipeline.sh the very first non-comment line defines the name of the queue available to you for job submissions. Please edit this line to provide the correct queue name.
+
+C. Failure modes: The PhyloGeneious pipeline uses an array of software tools in multiple stages. With certain input data sets, especially those that are very large, some of the steps will fail due to resource limitations or other unavoidable issues. 
+
+1. After the gene families are reconstructed some of the largest gene families may be very large (> 1000 proteins). These large families need an extraordinary amount of compute resources, i.e., memory and walltime, to be phylogenetically resolved. If the ortholog resolution in a gene family keeps failing for any reason, you can skip the family by creating an empty oid.tre file in that family folder (e.g., for family 25 `touch $OID_USER_DIR/data/25/oid.tre`)
+
+
 ### Disclamer:
 - This pipeline is under development and only been tested and used on New York University's HPC cluster (Slurm and PBS job schedulers). While it is likely to work on PBS or Slurm HPC systems, it is not guaranteed.
 
