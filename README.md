@@ -11,8 +11,8 @@ The pipeline uses various programs to complete the analysis. Please make sure to
 1.  BLAST+
 2.  MCL
 3.  MAFFT
-4.  TNT # Before running the pipeline for the first time, type "tnt", and agree to the terms and conditions
-6.  Perl > v.5.20
+4.  TNT	# Before running the pipeline for the first time, type "tnt", and agree to the terms and conditions
+6.  Perl > v.5.20	# Needs the DB_File.pm module
 
 
 ### Run setup:
