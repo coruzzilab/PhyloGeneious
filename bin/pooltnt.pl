@@ -50,6 +50,10 @@ my $pooldone = 'log/job/pooldone';
         my $pid;
 #        sleep 2;
 #        next if $pid = fork;  #parent
+        if (-s "data/$fam/oid.tre"){
+             print "$fam already done\n";
+             next;  #just get next fam
+         }
         if ($pid = fork()) { # parent
             $curthr ++;
             next if ($curthr < $nthr);
@@ -67,16 +71,27 @@ my $pooldone = 'log/job/pooldone';
              print "$fam already done\n";
              exit;
          }
+         local $SIG{ALRM} = sub{ print "$pid timed out $fam\n"; exit};
          my $famdol = '^'."$fam".'$';
+         print "in child  fam $fam\n";
          alignFamily("$famdol");
+         alarm 600; #these are fast rtns but may hang
          makeTree("$famdol");
+         alarm 0;  #cancel alarm it works
 #        my $status = system("tnt p $tnt 0</dev/null 1>&0 2>&0");
 #
         my $tm = localtime;
         print "$tm tnt with $fam done \n";
         exit;
     }
-    1 while (wait() != -1);
+    #    1 while (wait() != -1);  ## does not seem to work - also does not record last few 
+    while ($curthr > 0){
+            my $child = wait();
+            $tm = localtime;
+            print "$tm $child completed\n";
+            $curthr--;
+        }
+        
 
     open (FI,">$pooldone");
     print FI "$startfam,$endfam\n";
