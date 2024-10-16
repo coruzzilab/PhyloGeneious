@@ -1,0 +1,17 @@
+log jac.log;
+mxram 32000;
+p Matrix.tnt;
+rs 269138440;
+col3;
+hold 10001;
+mu=rep1ho2SPR;
+k0;
+resample jak rep 10000 savetrees [mu=rep1ho2SPR];
+reroot[;
+taxname=;
+tsave* jac.tre;
+save 0.9999;
+tsave/;
+log/;
+zz/;
+proc/;

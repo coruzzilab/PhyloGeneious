@@ -1067,6 +1067,7 @@ sub makeFamily() {
 	my $singletNum = 0;
 	my $familyDir;
 	my $singletFile = "$OID_DATADIR/singlets";
+	my $status;
 #	my $FASTACMD = defined($BLAST_HOME) ? "$BLAST_HOME/bin/fastacmd" : "fastacmd";
     my $FASTACMD= "blastdbcmd";
 	
@@ -1136,6 +1137,7 @@ sub makeFamily() {
 		close FFH;
             	open(XX,">$OID_DATADIR/.$familyNum.fam.done");  #create a done file
             	close XX;
+            	$status = system("$OID_HOME/bin/fix_familyfastas.sh $familyDir/$unalignedFamily"); #fix SEQUENCE>TaxID errors
             	chkuptm();
 		$familyNum++;
 		}
