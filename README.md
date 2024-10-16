@@ -1,11 +1,11 @@
 # PhyloGeneious
- High Performance Computing optimized orthology inference.
+ High Performance Computing optimized parsimony-based orthology inference.
 
 PhyloGeneious is an improved version of the OrthologID pipeline, optimized for HPC clusters (Slurm and PBS job schedulers).
 
 ![Pipeline](Pipeline_steps.png)
 
-By using our pipeline, you also agree to the [TNT Personal Use License](https://www.lillo.org.ar/phylogeny/tnt/files/LicenseAgreement_1.5.htm).
+By using this pipeline, you also agree to the [TNT Personal Use License](https://www.lillo.org.ar/phylogeny/tnt/files/LicenseAgreement_1.5.htm).
 
 ## System requirements
 This pipeline is under development and has only been tested and used on New York University's HPC cluster (Slurm and PBS job schedulers). The basic requirement is to be able to start batch jobs from
@@ -108,15 +108,15 @@ export OID_HOME=/path/to/PhyloGeneious/folder
 
 export OID_USER_DIR=/path/to/project/folder
 
-\# "-m" for setting a minmum cutoff for number of taxa per ortholog group, for that ortholog group to be included in concatenated matrix:
+# "-m" for setting a minmum cutoff for number of taxa per ortholog group, for that ortholog group to be included in concatenated matrix:
 
 perl $OID_HOME/bin/orth2matrix.pl -m 10
 
-\# "-x" to exclude a given taxa from the concatenated matrix (for tree search). Multiple taxa can be indicated (comma-seperated):
+# "-x" to exclude a given taxa from the concatenated matrix (for tree search). Multiple taxa can be indicated (comma-seperated):
 
 perl $OID_HOME/bin/orth2matrix.pl -x Aratha
 
-\# "-O" flag will remove all partitions that do not contain a sequence from the outgroup:
+# "-O" flag will remove all partitions that do not contain a sequence from the outgroup:
 
 perl $OID_HOME/bin/orth2matrix.pl -O
 ```
