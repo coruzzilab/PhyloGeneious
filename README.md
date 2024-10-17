@@ -82,7 +82,7 @@ nohup sh $OID_HOME/bin/topshell.sh > run.log 2>&1 &
 - The pipeline is set to cancels it self every 20 hr, and restart automatically. This is because often jobs on HPC have a walltime limit. In the furue we will allow to costumize this variable
 - It creates ".done" files, so that if a job crashes, it picks up where it left (just restart the run again, don't forget the environment variables...)
 
-#### Outputs:
+### Outputs:
 The pipeline will identify ortholog groups and create concatenated matrices and partition files:
 1. Matrix.nex - Concatenated matrix in a nexus format for searching a total evidence (species) tree using PAUP `default: all ortholog groups`
 2. Matrix.tnt - Concatenated matrix in a TNT expected format for searching a total evidence (species) tree using TNT. It includes only parsimony informative characters to save space/memory
@@ -121,7 +121,7 @@ perl $OID_HOME/bin/orth2matrix.pl -x Aratha
 perl $OID_HOME/bin/orth2matrix.pl -O
 ```
 
-### Troubleshooting:
+## Troubleshooting:
 
 A. Data entry issues: Issues with data correctness and completeness can cause the pipeline to fail in certain cases. Here are some common issues:
 
