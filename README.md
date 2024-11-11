@@ -76,6 +76,7 @@ Once you have set all the above, including the environment variables, run the fo
 nohup sh $OID_HOME/bin/topshell.sh > run.log 2>&1 &
 ```
 
+#### Test run:
 To do a test run of the pipeline, copy the testdata directory provided here to your desired location, modify the paths in setoid.sh, and follow the above instructions. Run time will vary depending on resource availability, but a successful test run should complete in less than twelve hours, with TNT jobs running for less than an hour.
 
 #### Some notes:
