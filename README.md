@@ -8,8 +8,7 @@ PhyloGeneious is an improved version of the OrthologID pipeline, optimized for H
 By using this pipeline, you also agree to the [TNT Personal Use License](https://www.lillo.org.ar/phylogeny/tnt/files/LicenseAgreement_1.5.htm).
 
 ## System requirements
-This pipeline is under development and has only been tested and used on New York University's HPC cluster (Slurm and PBS job schedulers). The basic requirement is to be able to start batch jobs from
-running batch jobs, with instant feedback of the job ID created. This way
+This pipeline is under development and has only been tested and used on New York University's Prince and Greene HPC clusters (Slurm and PBS job schedulers). The basic requirement is to be able to start batch jobs from running batch jobs, with instant feedback of the job ID created. This way
 various programs can not only submit jobs but also monitor them for
 completion.
 
@@ -22,8 +21,8 @@ The Phylogeneious pipeline uses various programs to complete the analysis. Pleas
 3.  MAFFT
 4.  TNT # Before running the pipeline for the first time, type "tnt", and agree to the terms and conditions
 5.  Perl > v.5.20 # Needs the DB_File.pm module
-6.  RAxML (raxmlHPC-PTHREADS-AVX) # for the post-analysis TE tree search
-7.  Python # for post-analysis
+6.  RAxML (raxmlHPC-PTHREADS-AVX) # for the post-analysis total evidence tree search
+7.  Python >= 3.6 # for post-analysis scripts
 8.  R # for post-analysis GO enrichment
 
 ## Run setup:
@@ -77,10 +76,13 @@ Once you have set all the above, including the environment variables, run the fo
 nohup sh $OID_HOME/bin/topshell.sh > run.log 2>&1 &
 ```
 
+To do a test run of the pipeline, copy the testdata directory provided here to your desired location, modify the paths in setoid.sh, and follow the above instructions. Run time will vary depending on resource availability, but a successful test run should complete in less than twelve hours, with TNT jobs running for less than an hour.
+
 #### Some notes:
 - A log of the main job is saved in the "toplog" subfolder
 - The pipeline is set to cancels it self every 20 hr, and restart automatically. This is because often jobs on HPC have a walltime limit. In the furue we will allow to costumize this variable
 - It creates ".done" files, so that if a job crashes, it picks up where it left (just restart the run again, don't forget the environment variables...)
+- If TNT jobs are running for long periods without completion or log output, double-check that the TNT license has been agreed to.
 
 ### Outputs:
 The pipeline will identify ortholog groups and create concatenated matrices and partition files:
