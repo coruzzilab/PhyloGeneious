@@ -10,8 +10,7 @@
 ##PBS -o /scratch/cmz209/orthotnt/oidTest9/log/job/
 #PBS -q cgsb-s
 #PBS -N pooltnt
-#PBS -V 
-
+#PBS -V
 
 cd $OID_USER_DIR
 date

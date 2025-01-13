@@ -31,13 +31,13 @@ BEGIN {
         print "$HPC unknown using PBS\n";
         $HPC  = 'PBS';
     }
- 
+
     $OID_BLAST="$OID_USER_DIR/blast";
     $MYUSER = `whoami`;
 }
 
 use lib "$OID_HOME/lib";
-use OrthologID; 
+use OrthologID;
 use Getopt::Long;
 use strict;
 
@@ -77,7 +77,7 @@ sub startqs { #starts a qsub
     }
 }  ## startqs
 
-sub activqs { #test if qsid still running 
+sub activqs { #test if qsid still running
     my $rqs = shift;
     my %active = ();
     my @stuff = ();
@@ -120,7 +120,7 @@ sub activqs { #test if qsid still running
             my $sec = substr ($stuff[-1],5,2);
             $strt = $t - $hrs*ONE_HOUR - $min*ONE_MINUTE ;
             print "$stuff[-1] was ",$strt,"\n";
-            
+
             $active{"$qs"} = [$strt, $stuff[-1],$stuff[-3]];  #put found pids in hash
 #            print "$stuff[0] is active\n";
         }
@@ -131,7 +131,7 @@ sub activqs { #test if qsid still running
         return ($fndme,%actfam);
     }
     foreach $qs (keys %active){
-        
+
 #        my $pid = open(GR, "grep -c '>' FAMILY |") ;
 #        $sztaxa{$dir} = <GR>;
         my $log = "log/job/*".$qs;
@@ -153,8 +153,8 @@ sub activqs { #test if qsid still running
             $$rqs{$qs} = [$fam,$strt,$wall]  if ($fam>0);
     }
     return ($fndme,%actfam);
-}       
-sub testqs { #test if qsid still running 
+}
+sub testqs { #test if qsid still running
     my $rqs = shift;
     my %active = ();
     my @stuff = ();
@@ -162,7 +162,7 @@ sub testqs { #test if qsid still running
     my $myjob = $ENV{"PBS_JOBID"};
     my $fndme = 0;
     $fndme = 1 if (! $myjob);   #non pbs system
-    
+
 #    print "testqs called @$rqs\n";
 	$| = 1;    # flush STDOUT
 #    print "enter testqs as $MYUSER\n";

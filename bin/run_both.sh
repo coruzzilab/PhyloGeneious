@@ -28,20 +28,17 @@
 # My PBS queue
 PBSQ="cgsb-s"
 
-
-
-
 # Memory size of higher memory node needed for running mcl
 HIMEM="12GB"
 ##export OID_USER_DIR=`pwd`
 ##export OID_HOME=/home/cmz209/orthotnt/OID_nw3
 if [[ -z $MY_SHELL ]]; then
-	echo  "MY_SHELL not defined - won't restart properly"
-    export MY_SHELL=$0
+	echo "MY_SHELL not defined - won't restart properly"
+	export MY_SHELL=$0
 ##	exit 1
 fi
 echo "will restart $MY_SHELL"
-$OID_HOME/bin/gettime.pl >starttime
+date +%s >starttime
 #module load mercurial/intel/2.1.2
 #module load mcl/intel/12-068
 #module load mafft/intel/6.864
@@ -59,8 +56,8 @@ else
 	OID_VERSION="unknown"
 fi
 if [[ ! -f $OID_USER_DIR/procfiles.txt ]]; then
-    cp $OID_HOME/config/procfiles.txt $OID_USER_DIR
-    echo "copied procfiles.txt from $OID_HOME"
+	cp $OID_HOME/config/procfiles.txt $OID_USER_DIR
+	echo "copied procfiles.txt from $OID_HOME"
 fi
 
 OID_BIN=$OID_HOME/bin
@@ -89,8 +86,8 @@ echo "Run directory is $OID_USER_DIR"
 # Check/parse config file
 CONFIG=$OID_USER_DIR/config
 if [[ ! -f $CONFIG ]]; then
-    echo  "Config file required -- a sample is $OID_HOME/config/config "
-	echo  "... exiting"
+	echo "Config file required -- a sample is $OID_HOME/config/config "
+	echo "... exiting"
 	exit 1
 fi
 declare -a INGROUP
@@ -99,9 +96,9 @@ declare -a OUTGROUP
 OUTGROUP=($(grep OUTGROUP $CONFIG | cut -f2 -d=))
 #set -a INGROUP $(grep INGROUP $CONFIG | cut -f2 -d=)
 #set -a OUTGROUP $(grep OUTGROUP $CONFIG | cut -f2 -d=)
-HPC=$(sed -n  's/^HPC *= *\([PSG]*\).*/\1/p' $CONFIG)
+HPC=$(sed -n 's/^HPC *= *\([PSG]*\).*/\1/p' $CONFIG)
 if [[ -z $HPC ]]; then
-    HPC=P
+	HPC=P
 fi
 echo "proc set hpc to $HPC"
 NCPU=$(sed -n 's/^NCPU *= *\([0-9]*\).*/\1/p' $CONFIG)
@@ -117,12 +114,12 @@ time
 # Setup BLAST database
 echo "Setting up BLAST database ..."
 if [[ ! -d $OID_USER_DIR/blastdb ]]; then
-	echo  "Sequence directory \"$OID_USER_DIR/blastdb\" does not exist ... exiting"
+	echo "Sequence directory \"$OID_USER_DIR/blastdb\" does not exist ... exiting"
 	exit 1
 fi
 $OID_BIN/setup_blastdb.sh "${INGROUP[@]}" "${OUTGROUP[@]}"
 if [[ $? -ne 0 ]]; then
-	echo  "Unable to setup BLAST db ... exiting"
+	echo "Unable to setup BLAST db ... exiting"
 	exit 1
 fi
 
@@ -149,46 +146,50 @@ chmod a+x $JOB_SCRIPT
 # All-all BLAST
 echo hpc set $HPC
 if [[ $SLURM_JOB_ID ]]; then
-echo proc job $SLURM_JOB_ID
-echo proc cpu $SLURM_CPUS_PER_TASK
-echo proc ntask $SLURM_NTASKS
-export SOFT=$SCRATCH/software/bigplant
+	echo proc job $SLURM_JOB_ID
+	echo proc cpu $SLURM_CPUS_PER_TASK
+	echo proc ntask $SLURM_NTASKS
+	export SOFT=$SCRATCH/software/bigplant
 fi
 if [[ ! -s $OID_USER_DIR/blast/blastres.blst ]]; then
-        cp $OID_USER_DIR/blastdb/combined.fa $OID_USER_DIR/blast
-#        source activate $SOFT
-#        module load perl
-        $OID_HOME/bin/new_blast_parts.pl    #make partn.faa (pgm estimates size
-#        NPART = $(/bina/ls OID_USER_DIR/blast/*.* | grep -c ".faa")
-       $OID_HOME/bin/qsblast.pl -g 16 -n 12 -w 12 -q $MAXQS
-#fi
-#echo 'proc finished'
+	cp $OID_USER_DIR/blastdb/combined.fa $OID_USER_DIR/blast
+	#        source activate $SOFT
+	#        module load perl
+	$OID_HOME/bin/new_blast_parts.pl #make partn.faa (pgm estimates size
+	#        NPART = $(/bina/ls OID_USER_DIR/blast/*.* | grep -c ".faa")
+	$OID_HOME/bin/qsblast.pl -g 16 -n 12 -w 12 -q $MAXQS
+	#fi
+	#echo 'proc finished'
 	if ! [[ -f $OID_USER_DIR/blast/blastres.blst && -f $OID_USER_DIR/blast/genelen.blst ]]; then
-		echo  "Error: failed to generate BLAST results database"
+		echo "Error: failed to generate BLAST results database"
 		exit 1
+	else
+		echo "Archiving part files..."
+		tar -czf $OID_USER_DIR/blast/Parts.tar.gz $OID_USER_DIR/blast/Part[0-9]* --remove-files
+		tar -czf $OID_USER_DIR/blast/speciesParts.tar.gz $OID_USER_DIR/blast/[A-z]*Part[0-9]* --remove-files
 	fi
 else
-		echo "All-aginst-all BLAST results exist ... skipping"
+	echo "All-aginst-all BLAST results exist ... skipping"
 fi
 date
 time
 # Create gene families
 if ! /bin/ls -d $OID_USER_DIR/data/[1-9] >/dev/null 2>&1; then
 	echo "Creating families ..."
-#	if [[ -f $OID_USER_DIR/blast/clusters ]]; then
-		# Clustering done, just create family directories
-		$OID_HOME/bin/orthologid.pl -f
-#	else
-#		JOBID=$(qsub -l nodes=1:ppn=$NCPU,walltime=12:00:00 $JOB_SCRIPT -v arg1="-f" | grep '^[0-9]')
-#		# Wait for clustering to finish
-#		while sleep 60; do
-#			if [[ $(qstat $JOBID 2>/dev/null | grep -c $JOBID) -eq 0 ]]; then
-#				break
-#			fi
-#		done
-#	fi
+	#	if [[ -f $OID_USER_DIR/blast/clusters ]]; then
+	# Clustering done, just create family directories
+	$OID_HOME/bin/orthologid.pl -f
+	#	else
+	#		JOBID=$(qsub -l nodes=1:ppn=$NCPU,walltime=12:00:00 $JOB_SCRIPT -v arg1="-f" | grep '^[0-9]')
+	#		# Wait for clustering to finish
+	#		while sleep 60; do
+	#			if [[ $(qstat $JOBID 2>/dev/null | grep -c $JOBID) -eq 0 ]]; then
+	#				break
+	#			fi
+	#		done
+	#	fi
 	if [[ $? -ne 0 ]]; then
-		echo  "Family clustering failed!"
+		echo "Family clustering failed!"
 		exit 1
 	fi
 else
@@ -200,9 +201,9 @@ $OID_HOME/bin/rdfamdb.pl
 #
 rm log/job/schedone
 while [[ ! -f log/job/schedone ]]; do
-$OID_HOME/bin/orthologid.pl -s 'hello'
-if [[ ! -f log/job/schedone ]]; then
-   echo "orthologid.pl -s aborted before finish"
-   date
-fi
-done;
+	$OID_HOME/bin/orthologid.pl -s 'hello'
+	if [[ ! -f log/job/schedone ]]; then
+		echo "orthologid.pl -s aborted before finish"
+		date
+	fi
+done

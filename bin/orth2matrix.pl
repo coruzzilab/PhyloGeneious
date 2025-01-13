@@ -401,6 +401,8 @@ sub code {
             #$matrix->[$k][0] = $line[0];
             my $seq = uc( join( '', @line[ 1 .. $#line ] ) );
             $seq =~ tr/\*X/\?\?/;    # Replace * and X (stop codons) with ?
+	    $seq =~ tr/B/D/;    # Replace B (D or N) with D (most common)
+	    $seq =~ tr/Z/E/;    # Replace Z (E or Q) with E (most common)
             $seq =~ tr/ACDEFGHIKLMNOPQRSTUVWY\?\-//cd
               ;    #Allow only AA letters or ? or - in alignment
             my @aa = split( //, $seq );
@@ -511,7 +513,7 @@ sub code {
         #$output .= "\n";
     }
     $part++;
-    if($output==undef){print LOG "Partition $part: $partition is empty\n";}
+    if($output eq undef){print LOG "Partition $part: $partition is empty\n";}
 	else{print LOG "Partition $part: $partition positions are [". join(",", @informative) ."]\n";}
     return ($output);
 }

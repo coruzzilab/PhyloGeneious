@@ -9,26 +9,25 @@ use Cwd;
 use DB_File;
 
 # Local variables
-my $OID_HOME;        # OrthologID main directory
-my $OID_USER_DIR;    # OrthologID user run directory
-my $OID_CONF;        # OrthologID config file
-my $OID_DATADIR;     # OrthologID guide tree data directory
-my $OID_BLASTDIR;    # Directory to store OrthologID blast results
-my $BLAST_HOME;      # NCBI BLAST installation directory
-my @INGROUP;         # Ingroup taxa
-my @OUTGROUP;        # Outgroup taxa
-my $NCPU;            # Number of CPU to be used
-my $VERBOSE;         # Verbosity {0,1,2}
-my $DEBUG = 0;       # Debug mode
-my $BLAST_RES_DB;    # Database of all-all blast
+my $OID_HOME;                     # OrthologID main directory
+my $OID_USER_DIR;                 # OrthologID user run directory
+my $OID_CONF;                     # OrthologID config file
+my $OID_DATADIR;                  # OrthologID guide tree data directory
+my $OID_BLASTDIR;                 # Directory to store OrthologID blast results
+my $BLAST_HOME;                   # NCBI BLAST installation directory
+my @INGROUP;                      # Ingroup taxa
+my @OUTGROUP;                     # Outgroup taxa
+my $NCPU;                         # Number of CPU to be used
+my $VERBOSE;                      # Verbosity {0,1,2}
+my $DEBUG = 0;                    # Debug mode
+my $BLAST_RES_DB;                 # Database of all-all blast
 my ( $DB_USER, $DB_PASSWORD );    # MySQL DB username and password
 
 # BLAST e-value cutoff for potential orthologs
-my $FAM_E_CUTOFF     = "1e-10";
-
+my $FAM_E_CUTOFF = "1e-10";
 
 # OrthologID "global" variables
-die "OID_HOME environment variable undefined!\n" if !$ENV{'OID_HOME'};
+die "OID_HOME environment variable undefined!\n"     if !$ENV{'OID_HOME'};
 die "OID_USER_DIR environment variable undefined!\n" if !$ENV{'OID_USER_DIR'};
 $OID_HOME       = $ENV{'OID_HOME'};
 $OID_USER_DIR   = $ENV{'OID_USER_DIR'};
@@ -41,89 +40,90 @@ $OID_CONF       = "$OID_USER_DIR/config";
 die "OrthologID config file not found!\n" if !-r $OID_CONF;
 
 # Clustering
-my $GENE_LEN_DB = "$OID_BLASTDIR/genelen.dbm";
+my $GENE_LEN_DB  = "$OID_BLASTDIR/genelen.dbm";
 my $clustersFile = "$OID_BLASTDIR/clusters";
 
 my $unalignedFamily = "FAMILY";
-my $alignedFamily = "FAMILY.aligned";
+my $alignedFamily   = "FAMILY.aligned";
 
 # Initialize
 #&initOID;
 my $query = shift;
 allBlast($query);
+
 sub initOID {
 
-	# Defaults
-	$NCPU = 1;
+    # Defaults
+    $NCPU = 1;
 
-	# Parse configuration file
-	open CONF_FH, "$OID_CONF" or die "Cannot open $OID_CONF: $!\n";
-	while (<CONF_FH>) {
-		chomp;
-		next if (/^#/);
-		if (/^\s*BLASTHOME\s*=\s*(.+?)\s*$/)
-		{    # Installation directory of NCBI BLAST
-			$BLAST_HOME = $1;
-		}
-		elsif (/^\s*INGROUP\s*=\s*(.+?)\s*$/) {    # Ingroup species prefixes
-			$_       = $1;
-			@INGROUP = split;
-		}
-		elsif (/^\s*OUTGROUP\s*=\s*(.+?)\s*$/) {    # Outgroup species prefixes
-			$_        = $1;
-			@OUTGROUP = split;
-		}
-		elsif (/^\s*NCPU\s*=\s*(\d+)/) {            # Number of CPUs available
-			$NCPU = $1;
-		}
-		elsif (/^\s*VERBOSE\s*=\s*(\d+)/) {         # Verbosity
-			$VERBOSE = $1;
-		}
-		elsif (/^\s*DEBUG\s*=\s*(\d+)/) {           # Debug mode
-			$DEBUG = $1;
-		}
-		elsif (/^\s*(MYSQL_\w+)\s*=\s*(.+?)\s*$/) {    # MYSQL environment (not used)
-			$ENV{$1} = $2;
-		}
-		elsif (/^\s*DB_USER\s*=\s*(\S+)\s*$/) {        # MYSQL user (not used)
-			$DB_USER = $1;
-		}
-		elsif (/^\s*DB_PASSWORD\s*=\s*(\S+)\s*$/) {    # MYSQL password (not used)
-			$DB_PASSWORD = $1;
-		}
-	}
-	close CONF_FH;
+    # Parse configuration file
+    open CONF_FH, "$OID_CONF" or die "Cannot open $OID_CONF: $!\n";
+    while (<CONF_FH>) {
+        chomp;
+        next if (/^#/);
+        if (/^\s*BLASTHOME\s*=\s*(.+?)\s*$/)
+        {    # Installation directory of NCBI BLAST
+            $BLAST_HOME = $1;
+        }
+        elsif (/^\s*INGROUP\s*=\s*(.+?)\s*$/) {    # Ingroup species prefixes
+            $_       = $1;
+            @INGROUP = split;
+        }
+        elsif (/^\s*OUTGROUP\s*=\s*(.+?)\s*$/) {    # Outgroup species prefixes
+            $_        = $1;
+            @OUTGROUP = split;
+        }
+        elsif (/^\s*NCPU\s*=\s*(\d+)/) {            # Number of CPUs available
+            $NCPU = $1;
+        }
+        elsif (/^\s*VERBOSE\s*=\s*(\d+)/) {         # Verbosity
+            $VERBOSE = $1;
+        }
+        elsif (/^\s*DEBUG\s*=\s*(\d+)/) {           # Debug mode
+            $DEBUG = $1;
+        }
+        elsif (/^\s*(MYSQL_\w+)\s*=\s*(.+?)\s*$/)
+        {    # MYSQL environment (not used)
+            $ENV{$1} = $2;
+        }
+        elsif (/^\s*DB_USER\s*=\s*(\S+)\s*$/) {    # MYSQL user (not used)
+            $DB_USER = $1;
+        }
+        elsif (/^\s*DB_PASSWORD\s*=\s*(\S+)\s*$/) {  # MYSQL password (not used)
+            $DB_PASSWORD = $1;
+        }
+    }
+    close CONF_FH;
 
-	die if !( @INGROUP && @OUTGROUP );
+    die if !( @INGROUP && @OUTGROUP );
 
-	return 1;
+    return 1;
 }
 
 # Preloaded methods go here.
-
 
 #
 # Retrieve ingroup list
 #
 sub getIngroup() {
-	return @INGROUP;
+    return @INGROUP;
 }
 
 #
 # Retrieve outgroup list
 #
 sub getOutgroup() {
-	return @OUTGROUP;
+    return @OUTGROUP;
 }
 
 #
 # Print configuration info
 #
 sub printConfig() {
-	print "OID_HOME = $OID_HOME\n";
-	print "OID_USER_DIR= $OID_USER_DIR\n";
-	print "Ingroup taxa = @INGROUP\n";
-	print "Outgroup taxa = @OUTGROUP\n";
+    print "OID_HOME = $OID_HOME\n";
+    print "OID_USER_DIR= $OID_USER_DIR\n";
+    print "Ingroup taxa = @INGROUP\n";
+    print "Outgroup taxa = @OUTGROUP\n";
 }
 
 #
@@ -133,48 +133,49 @@ sub printConfig() {
 # Asterisk (*) means combine all previously generated blast results.
 #
 sub allBlast {
-	my $prefix  = shift;
-	my $verbose = $VERBOSE;
-	#### E-value cutoff
-	#my $eCutOff = "1e-16";
-	my $eCutOff = $FAM_E_CUTOFF;
-	####
+    my $prefix  = shift;
+    my $verbose = $VERBOSE;
+    #### E-value cutoff
+    #my $eCutOff = "1e-16";
+    my $eCutOff = $FAM_E_CUTOFF;
+    ####
 
-	my $outputDir = $OID_BLASTDIR;    # Directory to store blast output
-	my @queryGroup;                   # BLAST query taxa
-	my $blastResDB;                   # DB file to store blast results
-	my $geneLenDB;                    # DB file to store gene length
-	my $numProc = $NCPU;
-	my %blastRes;
-	my %geneLen;
+    my $outputDir = $OID_BLASTDIR;    # Directory to store blast output
+    my @queryGroup;                   # BLAST query taxa
+    my $blastResDB;                   # DB file to store blast results
+    my $geneLenDB;                    # DB file to store gene length
+    my $numProc = $NCPU;
+    my %blastRes;
+    my %geneLen;
 
     print "in blastall with $prefix\n";
 
-	if ( defined($prefix) && $prefix ne '*' ) {
-		$blastResDB = "$OID_BLASTDIR/$prefix" . "_blastres.dbm";
-		$geneLenDB = "$OID_BLASTDIR/$prefix" . "_genelen.dbm";
-    }else {
-		$blastResDB = $BLAST_RES_DB;
-		$geneLenDB = $GENE_LEN_DB;
-	}
-			tie %blastRes, "DB_File", $blastResDB
-			  or die "Cannot open $blastResDB: $!\n";
-			tie %geneLen, "DB_File", $geneLenDB
-				or die "Cannot open $geneLenDB: $!\n";
-			foreach my $locus ( keys %blastRes ) {
-#				$blastRes{$locus} = $blastRes{$locus};
-                   print ">$locus\n";
-                   print "$blastRes{$locus}\n";
-			}
-			untie %blastRes;
-			foreach my $locus ( keys %geneLen ) {
-#				$geneLen{$locus} = $geneLen{$locus};
-                   print ">$locus\n";
-                   print "$geneLen{$locus}\n";
-			}
-			untie %geneLen;
+    if ( defined($prefix) && $prefix ne '*' ) {
+        $blastResDB = "$OID_BLASTDIR/$prefix" . "_blastres.dbm";
+        $geneLenDB  = "$OID_BLASTDIR/$prefix" . "_genelen.dbm";
+    }
+    else {
+        $blastResDB = $BLAST_RES_DB;
+        $geneLenDB  = $GENE_LEN_DB;
+    }
+    tie %blastRes, "DB_File", $blastResDB
+      or die "Cannot open $blastResDB: $!\n";
+    tie %geneLen, "DB_File", $geneLenDB
+      or die "Cannot open $geneLenDB: $!\n";
+    foreach my $locus ( keys %blastRes ) {
 
+        #				$blastRes{$locus} = $blastRes{$locus};
+        print ">$locus\n";
+        print "$blastRes{$locus}\n";
+    }
+    untie %blastRes;
+    foreach my $locus ( keys %geneLen ) {
+
+        #				$geneLen{$locus} = $geneLen{$locus};
+        print ">$locus\n";
+        print "$geneLen{$locus}\n";
+    }
+    untie %geneLen;
 
 }
-
 

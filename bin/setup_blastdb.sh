@@ -24,7 +24,18 @@
 # $Id: setup_blastdb.sh 91 2009-03-02 06:24:06Z ernie $
 #
 
-echo "setup_blast+"
+if [[ $SEARCHTYPE -eq 'B' ]]; then
+    echo "setup_blast+"
+elif [[ $SEARCHTYPE -eq 'D' ]]; then
+    echo "setup_diamond"
+elif [[ $SEARCHTYPE -eq 'M' ]]; then
+    echo "setup mmseqs2"
+# elif [[ $SEARCHTYPE -eq 'K' ]]; then
+#     echo "setup kaamer"
+else
+    echo "search method not recognized. please use blastp, diamond, or mmseqs2."
+    exit 1
+fi
 if [[ $OID_HOME == "" ]]; then
 	echo -u2 "OID_HOME not defined ... exiting"
 	exit 1
@@ -49,20 +60,32 @@ export PATH=~/blastplus/bin:$PATH
 Combined="combined.fa"
 cd $OID_USER_DIR/blastdb
 if [[ -s $Combined ]]; then
-    echo -u2 "combined fa already exists - just apending"
+	echo -u2 "combined fa already exists - just apending"
 else
-    >$Combined
+	>$Combined
 fi
 
 for i in "$@"; do
-    echo $i
-	
+	echo $i
+
 	# Check if BLAST DB exists
-	if [[ -s $i.psq ]]; then
+	if [[ $SEARCHTYPE -eq 'B' ]]; then
+            if [[ -s $i.psq ]]; then
 		echo "BLAST db file for $i already exists ... skipping"
 		continue
+	    fi
+	elif [[ $SEARCHTYPE -eq 'D' ]]; then
+    	    if [[ -s $i.dmnd ]]; then
+	        echo "DIAMOND db file for $i already exists ... skipping"
+		continue
+	    fi
+	elif [[ $SEARCHTYPE -eq 'M' ]]; then
+            if [[ -s $i.DB ]]; then
+	        echo "MMseqs2 db file for $i already exists ... skipping"
+		continue
+	    fi
 	fi
-	
+
 	# Find fasta file
 	fasta_file=""
 	if [[ -f $i.seq ]]; then
@@ -90,12 +113,30 @@ for i in "$@"; do
 		echo -u2 "Warning: The following gene names do not contain a # character to delimit the species name and geneID:"
 		grep '^>[^#]*$' $fasta_file
 	fi
-	
-	# Create BLAST DB (assuming protein sequences)
-	echo "Creating ${i%%.*} BLAST db"
-    cat $fasta_file >>$Combined
-# 	$FORMATDB -n $i -i $fasta_file -o T
-    makeblastdb -dbtype 'prot' -in $fasta_file -title $i -out $i -parse_seqids
-done
+	if grep -v '^>' $fasta_file | grep -q '[^AaBbCcDdEeFfGgHhIiKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz*]'; then
+ 		echo -u2 "Error: Illegal characters detected in protein sequences in $fasta_file."
+   		grep -v '>' $fasta_file | grep '[^AaBbCcDdEeFfGgHhIiKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz*]'
+     		exit 1
+       fi
 
-		
+	# Create BLAST DB (assuming protein sequences)
+	if [[ $SEARCHTYPE -eq 'B' ]]; then
+    	    echo "Creating ${i%%.*} BLAST db"
+	    cat $fasta_file >>$Combined
+	#     $FORMATDB -n $i -i $fasta_file -o T
+	    makeblastdb -dbtype 'prot' -in $fasta_file -title $i -out $i -parse_seqids
+	elif [[ $SEARCHTYPE -eq 'D' ]]; then
+            echo "Creating ${i%%.*} DIAMOND db"
+	    cat $fasta_file >>$Combined
+	    diamond makedb --in $fasta_file --db $i
+	elif [[ $SEARCHTYPE -eq 'M' ]]; then
+    	    echo "Creating ${i%%.*} MMseqs2 db"
+	    cat $fasta_file >>$Combined
+	    mmseqs createdb $fasta_file $i.DB --dbtype 1
+	    mmseqs/bin/mmseqs createindex $i.DB tmp
+	# elif [[ $SEARCHTYPE -eq 'K' ]]; then
+    	#     echo "Creating ${i%%.*} kaamer db"
+	#     cat $fasta_file >>$Combined
+	#     go/bin/kaamer-db -make -f faa -i $fasta_file -d $i
+	fi
+done

@@ -1,0 +1,82 @@
+BIGPLANT pipeline:
+This pipeline is meant to run on diverse systems. Currently it runs on PBS
+(the old NYU HPC system, and at least 1 version of SLURM - that running on NYU
+Prince system). My basic requirement is to be able to start batch jobs from
+running batch jobs, with instant feedback of the jobid created. This way
+various programs can not only submit jobs but also monitor them for
+completions. Currently the Dalma SLURM system in Abu Dhabi does not fit these
+requirements as it both does not allow batch submissions from a running job
+nor does it give feedback after submission.
+We need the following to run the pipeline:
+runtime directory:
+blastdb  - directory with faa files of proteins to be blasted
+config - configuration file telling basic runtime parameters
+        the minimum config:
+        INGROUP= list of faa files  (without suffix) seperated by spaces of
+        ingroup
+        OUTGROUP= at least one faa for outgroup
+        HPC=     now S (slurm) or P (pbs)
+--- the following not required but recommended
+        NCPU=  Number of cpus to ask for starting a blast or tnt type job
+        MAXQS=   Number of process to run simultaneously - nominally blast and
+        tnt jobs.
+        TNTA=  lowest family size to be pooled in a group job running TNT
+        TNTB=  family size requiring a stand-alone process to run TNT
+        BLSTMIN=  number of minutes for an average blast job to run
+
+procfiles.txt (just copy from distribution)
+--------------------------------------------
+shell variables:
+OID_HOME     $OID_HOME/bin has running programs, $OID_HOME/lib has library:
+             OrthologID.pm
+OID_USER_DIR  run time directory
+HPC           should be set same as config (S or P)
+--------------------------------------
+to run:
+$OID_HOME/bin/topshell.sh     (optionally can add PBS or SLURM args ie 
+         --mem 32GB  
+-------------------------------------------------
+The basic changes to the pipeline vs the original version is to:
+run faster and allow the analysis of larger families
+restartable (often automatically).
+---------
+The strategy to make the pipeline run faster and easier to recover is to
+break slow steps into smaller parts and often to run more steps in parallel.
+Intellegence was used to choose what jobs to submit. Small fast jobs (small
+tnt families) where run in a pooling task or just serially by a single task.
+The largest jobs usually run much longer than all the smaller ones combined.
+We also set up a parameter TNTB to decide what is a large job. BLSTMIN helps
+us how many steps to run in the blast step. We took advantage of the fact that
+the time of a run against a constant set of databases is proportional to the
+string size of the input (not the number of fa entries). BLSTMIN allows us to
+balance recovery time vs run time.
+The easiest way to become restartable is for each step to create a done file.
+This allows a restarting job to skip all the steps that are complete. 
+Also asking for a really long time will likely make it slower to start up the
+top level job, so instead we only ask for 24 hours. The  proc creates a file :
+starttime which has a program readable timestamp. The long running top level
+programs monitor the up time of the entire job and restarts itself in about 22
+hours. (This isn't perfect and the whole job could time out if we are
+unlucky). 
+------------- details of done files  -----
+Normally you don't need to know the details on new directories, but if you
+reuse the same directory or want to rerun something you may need to delete
+some of these files.
+---- blast done files ---  in directory blast
+Blast is broken into xx parts.
+'.database.Partxx.done'  - marks each individual blast. Database is faa file.
+                         - xx is part # this run
+'.xx.done'           - the entire part xx finished
+---------------------------------
+blast/.mci.done   - mci finished
+---------------- Families
+data/.fam.done      each line has .xxx.fam.done where xxx is family # - indicates 
+		    individual family files done
+data/.family.done       all families completed
+--------------- trees
+log/job/pooldone  pooltnt has completed all its tnt jobs - must delete to rerun
+log/job/bigmdone  bigmon has run all the big tnt jobs -  must delete to rerun
+log/job/schedone  all tnt type jobs done 
+should also delete oid.tre files to rerun
+
+

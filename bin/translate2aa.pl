@@ -34,60 +34,60 @@ use strict;
 
 my $usage = "translate2aa.pl [ -m minlen ] dna_fasta_file";
 
-my $minLen = 30;  # Minimum number of nucleotides to be reported
+my $minLen = 30;    # Minimum number of nucleotides to be reported
 
 sub dna2aa($) {
-        my $getorfProg = "getorf --filter -minsize $minLen";
-        my $dna = shift @_;
-        return if length($dna) < $minLen;
+    my $getorfProg = "getorf --filter -minsize $minLen";
+    my $dna        = shift @_;
+    return if length($dna) < $minLen;
 
-        # Run getorf
-        my $pid = open2(*RFH, *WFH, $getorfProg);
-        print WFH $dna;
-        close WFH;
-        my $maxLen = 0;
-        my $aa;
-        my $best = 0;
-        while (<RFH>) {
-                chomp;
-                if (/^>.*\[(\d+)\D+(\d+)]/) {
-                        my $len = abs($2-$1);
-                        if ($len > $maxLen) {
-                                $maxLen = $len;
-                                $best = 1;
-                                $aa = "";
-                        }
-                        else {
-                                $best = 0;
-                        }
-                }
-                elsif ($best) {
-                        $aa .= $_;
-                }
+    # Run getorf
+    my $pid = open2( *RFH, *WFH, $getorfProg );
+    print WFH $dna;
+    close WFH;
+    my $maxLen = 0;
+    my $aa;
+    my $best = 0;
+    while (<RFH>) {
+        chomp;
+        if (/^>.*\[(\d+)\D+(\d+)]/) {
+            my $len = abs( $2 - $1 );
+            if ( $len > $maxLen ) {
+                $maxLen = $len;
+                $best   = 1;
+                $aa     = "";
+            }
+            else {
+                $best = 0;
+            }
         }
-        close RFH;
-		waitpid($pid, 0);
-        return $aa;
+        elsif ($best) {
+            $aa .= $_;
+        }
+    }
+    close RFH;
+    waitpid( $pid, 0 );
+    return $aa;
 }
 
 # Get options and arguments
-if (@ARGV == 3 && $ARGV[0] eq "-m") {
-	shift;
-	$minLen = shift;
-	die "Minimum length must be a positive integer!\n" if $minLen !~ /^\d+$/;
+if ( @ARGV == 3 && $ARGV[0] eq "-m" ) {
+    shift;
+    $minLen = shift;
+    die "Minimum length must be a positive integer!\n" if $minLen !~ /^\d+$/;
 }
 die "Usage: $usage\n" if @ARGV != 1;
 my $fna = $ARGV[0];
-die "$fna does not exist!\n" if ! -f $fna;
+die "$fna does not exist!\n" if !-f $fna;
 
-my $in = Bio::SeqIO->new(-file => $fna, -format => 'Fasta');
-while (my $seq = $in->next_seq) {
-        my $aa = dna2aa($seq->seq);
-        if (!defined $aa) {
-                warn "Could not translate ", $seq->id, "\n";
-                next;
-        }
-        print ">", $seq->id, "\n";
-        print "$aa\n";
+my $in = Bio::SeqIO->new( -file => $fna, -format => 'Fasta' );
+while ( my $seq = $in->next_seq ) {
+    my $aa = dna2aa( $seq->seq );
+    if ( !defined $aa ) {
+        warn "Could not translate ", $seq->id, "\n";
+        next;
+    }
+    print ">", $seq->id, "\n";
+    print "$aa\n";
 }
 

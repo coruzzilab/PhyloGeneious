@@ -43,6 +43,13 @@ shift "$(($OPTIND -1))"
 if [[ ${#FILEDIR} -eq 0 ]]; then
     echo "Error: Sequence file directory must be specified."
     exit 1
+else
+    if [[ "${FILEDIR::1}" != "/" ]]; then
+        FILEDIR="$PATHTOA/$FILEDIR"
+    fi
+    if [[ "${FILEDIR: -1}" == "/" ]]; then
+        FILEDIR=${FILEDIR::-1}
+    fi
 fi
 
 if [[ -d $ALIAS ]]; then

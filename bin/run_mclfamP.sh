@@ -3,7 +3,7 @@
 # PBS job script for orthologid
 #
 
-#PBS -V 
+#PBS -V
 #PBS -S /bin/bash
 #PBS -j oe
 #PBS -o log/job
@@ -15,12 +15,11 @@
 ##PBS -M cmz209@nyu.edu
 ##PBS -m abe
 
-
 echo hello for runmclfam
 cd $OID_USER_DIR
 OID_DATA=$OID_USER_DIR/data
 MYSTART=.$PBS_JOBID.start
-$OID_HOME/bin/gettime.pl >$MYSTART
+date +%s >$MYSTART
 echo runmclfam.pl >>$MYSTART
 
 $OID_HOME/bin/runmclfam.pl "$arg1"

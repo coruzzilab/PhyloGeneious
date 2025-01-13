@@ -3,14 +3,15 @@ use strict;
 my $locus;
 my %fanm;
 my $dupcnt = 0;
-print $ARGV[0],"\n";
-while (<>){
-    if (/^>(\S+)/){
+print $ARGV[0], "\n";
+while (<>) {
+    if (/^>(\S+)/) {
         $locus = $1;
-        if (exists $fanm{$locus}){
-            print "dupe locus ",$locus,"\n";
+        if ( exists $fanm{$locus} ) {
+            print "dupe locus ", $locus, "\n";
             $dupcnt++;
-        } else{
+        }
+        else {
             $fanm{$locus} = 1;
         }
     }

@@ -27,20 +27,17 @@
 # My PBS queue
 PBSQ="cgsb-s"
 
-
-
-
 # Memory size of higher memory node needed for running mcl
 HIMEM="12GB"
 ##export OID_USER_DIR=`pwd`
 ##export OID_HOME=/home/cmz209/orthotnt/OID_nw3
 if [[ -z $MY_SHELL ]]; then
 	print -u2 "MY_SHELL not defined - won't restart properly"
-    export MY_SHELL=$0
+	export MY_SHELL=$0
 ##	exit 1
 fi
 print "will restart $MY_SHELL"
-$OID_HOME/bin/gettime.pl >starttime
+date +%s >starttime
 #module load mercurial/intel/2.1.2
 #module load mcl/intel/12-068
 #module load mafft/intel/6.864
@@ -58,8 +55,8 @@ else
 	OID_VERSION="unknown"
 fi
 if [[ ! -f $OID_USER_DIR/procfiles.txt ]]; then
-    cp $OID_HOME/config/procfiles.txt $OID_USER_DIR
-    print "copied procfiles.txt from $OID_HOME"
+	cp $OID_HOME/config/procfiles.txt $OID_USER_DIR
+	print "copied procfiles.txt from $OID_HOME"
 fi
 
 OID_BIN=$OID_HOME/bin
@@ -88,7 +85,7 @@ print "Run directory is $OID_USER_DIR"
 # Check/parse config file
 CONFIG=$OID_USER_DIR/config
 if [[ ! -f $CONFIG ]]; then
-    print -u2 "Config file required -- a sample is $OID_HOME/config/config "
+	print -u2 "Config file required -- a sample is $OID_HOME/config/config "
 	print -u2 "... exiting"
 	exit 1
 fi
@@ -144,7 +141,7 @@ cat <<EOF >$JOB_SCRIPT
 #PBS -o log/job/
 #PBS -q $PBSQ
 #PBS -N $OID_RUN
-#PBS -V 
+#PBS -V
 
 PATH=$OID_BIN:$PATH
 
@@ -156,7 +153,8 @@ orthologid.pl "\$arg1" "\$arg2"
 date
 time
 if [[ "\$arg1" == "-b" ]]; then
-	touch blast/.\$arg2.done
+	#touch blast/.\$arg2.done
+	echo ".\$arg2.done" >> blast/.Parts.done
 fi
 EOF
 # End job script
@@ -164,54 +162,58 @@ chmod a+x $JOB_SCRIPT
 
 # All-all BLAST
 if [[ ! -s $OID_USER_DIR/blast/blastres.blst ]]; then
-        cp $OID_USER_DIR/blastdb/combined.fa $OID_USER_DIR/blast
-        $OID_HOME/bin/new_blast_parts.pl    #make partn.faa (pgm estimates size
-#        NPART = $(/bina/ls OID_USER_DIR/blast/*.* | grep -c ".faa")
-        $OID_HOME/bin/qsblast.pl  -g 16 -n 12 -w 12 -q $MAXQS
-#	for i in "${INGROUP[@]}" "${OUTGROUP[@]}" ; do
-##		print "Submitting job for $i-against-all BLAST..."
-#		qsub -l nodes=1:ppn=$NCPU,walltime=8:00:00 $JOB_SCRIPT -v arg1="-b",arg2="$i"
-#	done
-#	print "Waiting for BLAST jobs to finish ..."
-#date
-#time
-#	while sleep 300; do
-#		for i in "${INGROUP[@]}" "${OUTGROUP[@]}" ; do
-#			if [[ ! -f $OID_USER_DIR/blast/.$i.done ]]; then
-#				continue 2
-#			fi
-#		done
-#		break
-#	done
-#date
-#time
+	cp $OID_USER_DIR/blastdb/combined.fa $OID_USER_DIR/blast
+	$OID_HOME/bin/new_blast_parts.pl #make partn.faa (pgm estimates size
+	#        NPART = $(/bina/ls OID_USER_DIR/blast/*.* | grep -c ".faa")
+	$OID_HOME/bin/qsblast.pl -g 16 -n 12 -w 12 -q $MAXQS
+	#	for i in "${INGROUP[@]}" "${OUTGROUP[@]}" ; do
+	##		print "Submitting job for $i-against-all BLAST..."
+	#		qsub -l nodes=1:ppn=$NCPU,walltime=8:00:00 $JOB_SCRIPT -v arg1="-b",arg2="$i"
+	#	done
+	#	print "Waiting for BLAST jobs to finish ..."
+	#date
+	#time
+	#	while sleep 300; do
+	#		for i in "${INGROUP[@]}" "${OUTGROUP[@]}" ; do
+	#			if [[ ! -f $OID_USER_DIR/blast/.$i.done ]]; then
+	#				continue 2
+	#			fi
+	#		done
+	#		break
+	#	done
+	#date
+	#time
 
-#	print "Merging BLAST data ..."
-#	$OID_BIN/orthologid.pl -B
+	#	print "Merging BLAST data ..."
+	#	$OID_BIN/orthologid.pl -B
 	if ! [[ -f $OID_USER_DIR/blast/blastres.blst && -f $OID_USER_DIR/blast/genelen.blst ]]; then
 		print -u2 "Error: failed to generate BLAST results database"
 		exit 1
+	else
+		echo "Archiving part files..."
+		tar -czf $OID_USER_DIR/blast/Parts.tar.gz $OID_USER_DIR/blast/Part[0-9]* --remove-files
+		tar -czf $OID_USER_DIR/blast/speciesParts.tar.gz $OID_USER_DIR/blast/[A-z]*Part[0-9]* --remove-files
 	fi
 else
-		print "All-aginst-all BLAST results exist ... skipping"
+	print "All-aginst-all BLAST results exist ... skipping"
 fi
 date
 time
 # Create gene families
 if ! /bin/ls -d $OID_USER_DIR/data/[1-9] >/dev/null 2>&1; then
 	print "Creating families ..."
-#	if [[ -f $OID_USER_DIR/blast/clusters ]]; then
-		# Clustering done, just create family directories
-		$OID_HOME/bin/orthologid.pl -f
-#	else
-#		JOBID=$(qsub -l nodes=1:ppn=$NCPU,walltime=12:00:00 $JOB_SCRIPT -v arg1="-f" | grep '^[0-9]')
-#		# Wait for clustering to finish
-#		while sleep 60; do
-#			if [[ $(qstat $JOBID 2>/dev/null | grep -c $JOBID) -eq 0 ]]; then
-#				break
-#			fi
-#		done
-#	fi
+	#	if [[ -f $OID_USER_DIR/blast/clusters ]]; then
+	# Clustering done, just create family directories
+	$OID_HOME/bin/orthologid.pl -f
+	#	else
+	#		JOBID=$(qsub -l nodes=1:ppn=$NCPU,walltime=12:00:00 $JOB_SCRIPT -v arg1="-f" | grep '^[0-9]')
+	#		# Wait for clustering to finish
+	#		while sleep 60; do
+	#			if [[ $(qstat $JOBID 2>/dev/null | grep -c $JOBID) -eq 0 ]]; then
+	#				break
+	#			fi
+	#		done
+	#	fi
 	if [[ $? -ne 0 ]]; then
 		print -u2 "Family clustering failed!"
 		exit 1
@@ -225,12 +227,12 @@ $OID_HOME/bin/rdfamdb.pl
 #
 rm log/job/schedone
 while [[ ! -f log/job/schedone ]]; do
-$OID_HOME/bin/orthologid.pl -s 'hello'
-if [[ ! -f log/job/schedone ]]; then
-   print "orthologid.pl -s aborted before finish"
-   date
-fi
-done;
+	$OID_HOME/bin/orthologid.pl -s 'hello'
+	if [[ ! -f log/job/schedone ]]; then
+		print "orthologid.pl -s aborted before finish"
+		date
+	fi
+done
 date
 time
 # Extract orthologs
@@ -243,5 +245,33 @@ time
 print 'Generating matrix ...'
 $OID_BIN/orth2matrix.pl
 
+date
+time
+
+# Run tree searches
+echo "Tree search ..."
+if [[ -f jac.tre ]]; then
+	echo "Tree file already exists"
+else
+	tnt bground p $OID_HOME/PostProcessing/mpt.proc
+	tnt bground p $OID_HOME/PostProcessing/jac.proc
+fi
+while sleep 300; do
+	#	if [[ ! -f Jacknife.tre ]]; then
+	if [[ ! -f jac.tre ]]; then
+		continue
+	fi
+	break
+done
+
+date
+time
+
+echo "Processing trees..."
+python $OID_HOME/PostProcessing/fix_tree.py mpt.tre mpt_fixed.tre
+python $OID_HOME/PostProcessing/fix_tree.py mpt.nel mpt_nel_fixed.tre
+python $OID_HOME/PostProcessing/fix_tree.py jac.tre jac_fixed.tre
+
+echo "Pipeline complete!"
 date
 time

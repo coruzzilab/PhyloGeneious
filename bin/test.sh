@@ -1,0 +1,3 @@
+if [[ ! 1 = 1 || 3 = 3 ]];
+then echo "ok"
+fi

@@ -25,7 +25,7 @@
 # Author: Ernest Lee <elee@amnh.org>
 #
 
-if [[ $# -ne 2 ]] ; then
+if [[ $# -ne 2 ]]; then
 	echo "Usage: align_family fasta-file output-file"
 	exit 2
 fi
@@ -34,11 +34,11 @@ INPUT=$1
 OUTPUT=$2
 
 # Check I/O files and directory
-if [[ ! -r $INPUT ]] ; then
+if [[ ! -r $INPUT ]]; then
 	echo -u2 "$INPUT does not exist or is not readable"
 	exit 1
 fi
-if [[ -s $OUTPUT ]] ; then
+if [[ -s $OUTPUT ]]; then
 	echo -u2 "$OUTPUT exists"
 	exit 1
 fi
@@ -51,7 +51,7 @@ fi
 
 # MAFFT alignment
 numSeq=$(grep -c '^>' $INPUT)
-if ((numSeq<500)) ; then
+if ((numSeq < 500)); then
 	MAFFT_EXE='mafft-linsi'
 else
 	# Let MAFFT decides for large family
@@ -59,18 +59,17 @@ else
 fi
 
 echo -n "Using $MAFFT_EXE ... "
-$MAFFT_EXE --anysymbol --quiet $INPUT > $OUTPUT
+$MAFFT_EXE --anysymbol --quiet $INPUT >$OUTPUT
 status=$?
 
 # Re-run mafft if output is empty...
 if [[ ! -s $OUTPUT ]]; then
 	echo -n "failed\nRe-running mafft ... "
 	MAFFT_EXE='mafft --auto'
-	$MAFFT_EXE --anysymbol --quiet $INPUT > $OUTPUT
+	$MAFFT_EXE --anysymbol --quiet $INPUT >$OUTPUT
 	status=$?
 fi
 
 echo "done"
 
 exit $status
-

@@ -1,0 +1,18 @@
+Apleuropneumoniae10D13039	Actinobacillus pleuropneumoniae serovar 10 str.D13039	GCF_000178595.1
+Aminor202	Actinobacillus minor 202	GCF_000174155.1
+Asuccinogenes130Z	Actinobacillus succinogenes 130Z	GCA_000017245.1
+AactinomycetD11S1	Aggregatibacter actinomycetemcomitans D11S-1	GCF_000146265.3
+AaphrophilusNJ8700	Aggregatibacter aphrophilus NJ8700	GCF_001188835.1
+EcoliK12MG1655	Escherichia coli str. K-12 substr. MG1655	GCF_000005845.2
+GanatisUMN179	Gallibacterium anatis UMN179	GCF_000209675.1
+HaegyptiusATCC11116	Haemophilus aegyptius ATCC 11116	GCA_000195005.1
+Hducreyi35000HP	[Haemophilus] ducreyi 35000HP	GCF_000007945.1
+Hinfluenzae22121	Haemophilus influenzae 22.1-21	GCA_000169735.1
+HinfluenzaeRdKW20	Haemophilus influenzae Rd KW20	GCA_000027305.1
+HparainfATCC33392	Haemophilus parainfluenzae ATCC 33392	GCA_000191405.1
+Hparasuis29755	Glaesserella parasuis 29755	GCF_000751055.1 or GCA_000172375.2
+Hsomnus129PT	Histophilus somni 2336	GCF_000019405.1
+MhaemolyticaA2BOV	Mannheimia haemolytica serotype A2 str. BOVINE	GCF_000176275.1
+Msuccinici	[Mannheimia] succiniciproducens MBEL55E	GCF_000007745.1
+PdagmatisATCC43325	Pasteurella dagmatis ATCC 43325	GCF_000163475.1
+PmultocidaPm70	Pasteurella multocida subsp. multocida str. Pm70	GCF_000006825.1

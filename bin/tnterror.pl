@@ -24,35 +24,40 @@
 use warnings;
 
 my $OID_HOME;
+
 BEGIN {
-	$OID_HOME=$ENV{'OID_HOME'};
-	die "Environment variable OID_HOME is not defined ... exiting.\n" if ! defined($OID_HOME);
-	$OID_USER_DIR = $ENV{'OID_USER_DIR'};
-	die "Environment variable OID_USER_DIR is not defined ... exiting.\n"
-	  if !defined($OID_USER_DIR);
+    $OID_HOME = $ENV{'OID_HOME'};
+    die "Environment variable OID_HOME is not defined ... exiting.\n"
+      if !defined($OID_HOME);
+    $OID_USER_DIR = $ENV{'OID_USER_DIR'};
+    die "Environment variable OID_USER_DIR is not defined ... exiting.\n"
+      if !defined($OID_USER_DIR);
 }
 
 use lib "$OID_HOME/lib";
-use OrthologID; 
+use OrthologID;
 use Getopt::Std;
 use strict;
 print "this program checks for tnt errors and tries to restart tnt\n";
-my %locproc  = ();
+my %locproc = ();
 my @lcutoff = ();
 my $prkey;
+
 #package OrthlogID;
 makeTree(3);
 print "TNTA $TNTA\n";
-foreach $prkey(keys %{procptr}){
+foreach $prkey ( keys %{procptr} ) {
     print "proc key $prkey\n";
     $locproc{$prkey} = ${procptr}{$prkey};
 }
+
 #@lcutoff = @{OrthologID::cutoff};
 my $nkeys = keys %locproc;
-foreach my $val (@{OrthologID::cutoff}){
-    push @lcutoff,$val;
+foreach my $val ( @{OrthologID::cutoff} ) {
+    push @lcutoff, $val;
     print "cutoff val $val\n";
 }
 print "there are $nkeys in local procptr\n";
+
 #print "cutoff" ,join ",",@lcutoff,"\n";
 

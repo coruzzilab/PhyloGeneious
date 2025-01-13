@@ -34,7 +34,7 @@ my @tntcmd = qw(tr1.proc tr2.proc);
         $tnt = tr.proc;
         my $status = system("tnt.command p $tnt 0</dev/null 1>&0 2>&0");
         print "tnt with $tnt exit $status\n";
-    
+
     my $lsv = `ls -l tr*`;
     print "ls value $lsv\n";
 

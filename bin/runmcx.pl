@@ -25,12 +25,14 @@
 use warnings;
 
 my $OID_HOME;
+
 BEGIN {
-	$OID_HOME=$ENV{'OID_HOME'};
-	die "Environment variable OID_HOME is not defined ... exiting.\n" if ! defined($OID_HOME);
-	$OID_USER_DIR = $ENV{'OID_USER_DIR'};
-	die "Environment variable OID_USER_DIR is not defined ... exiting.\n"
-	  if !defined($OID_USER_DIR);
+    $OID_HOME = $ENV{'OID_HOME'};
+    die "Environment variable OID_HOME is not defined ... exiting.\n"
+      if !defined($OID_HOME);
+    $OID_USER_DIR = $ENV{'OID_USER_DIR'};
+    die "Environment variable OID_USER_DIR is not defined ... exiting.\n"
+      if !defined($OID_USER_DIR);
 }
 
 use lib "$OID_HOME/lib";

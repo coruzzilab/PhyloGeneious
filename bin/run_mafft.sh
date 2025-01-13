@@ -10,8 +10,7 @@
 #PBS -o log/job
 #PBS -q cgsb-s
 #PBS -N bigmon
-#PBS -V 
-
+#PBS -V
 
 cd $OID_USER_DIR
 date
@@ -21,10 +20,9 @@ echo hello for mafft
 OID_DATA=$OID_USER_DIR/data
 
 cd $OID_DATA/"$arg1"
-mafft --auto --quiet --anysymbol --thread "$arg2" FAMILY>FAMILY.aligned
+mafft --auto --quiet --anysymbol --thread "$arg2" FAMILY >FAMILY.aligned
 cd $OID_USER_DIR
-$OID_HOME/bin/makenex.pl "$arg1" 
-
+$OID_HOME/bin/makenex.pl "$arg1"
 
 date
 time

@@ -29,27 +29,27 @@ use strict;
 my @seqNames;
 my %seqs;
 while (<>) {
-	chomp;
-	if (/^>(\S+)/) {
-		@seqNames = (@seqNames, $1);
-		$seqs{$1} = "";
-	}
-	else {
-		s/\s//g;
-		$seqs{$seqNames[@seqNames-1]} .= $_;
-	}
+    chomp;
+    if (/^>(\S+)/) {
+        @seqNames = ( @seqNames, $1 );
+        $seqs{$1} = "";
+    }
+    else {
+        s/\s//g;
+        $seqs{ $seqNames[ @seqNames - 1 ] } .= $_;
+    }
 }
 
 my $leading;
 my $trailing;
 foreach (@seqNames) {
-	if ($seqs{$_} =~ /(^[\s-]*)([A-Z]+[A-Z-]*[A-Z])([\s-]*$)/i) {
-		$leading = $1;
-		$trailing = $3;
-		$leading =~ tr/-/?/;
-		$trailing =~ tr/-/?/;
-		$seqs{$_} = $leading.$2.$trailing;
-		print ">$_\n", $seqs{$_}, "\n";
-	}
+    if ( $seqs{$_} =~ /(^[\s-]*)([A-Z]+[A-Z-]*[A-Z])([\s-]*$)/i ) {
+        $leading  = $1;
+        $trailing = $3;
+        $leading  =~ tr/-/?/;
+        $trailing =~ tr/-/?/;
+        $seqs{$_} = $leading . $2 . $trailing;
+        print ">$_\n", $seqs{$_}, "\n";
+    }
 }
 

@@ -1,10 +1,10 @@
-#!/bin/ksh 
+#!/bin/ksh
 #
 # mod to run blastp+ by chuck zegar 10/2/2015
 # My PBS queue
 PBSQ="cgsb-s"
-arg1=${1:-1};
-arg2=${2:-1};
+arg1=${1:-1}
+arg2=${2:-1}
 print "called with $arg1,$arg2"
 # Memory size of higher memory node needed for running mcl
 HIMEM="12GB"
@@ -39,4 +39,4 @@ EOF
 # End job script
 chmod a+x $JOB_SCRIPT
 print "$JOB_SCRIPT has $NCPU"
-            qsub -l nodes=1:ppn=$arg2 $JOB_SCRIPT;
+qsub -l nodes=1:ppn=$arg2 $JOB_SCRIPT

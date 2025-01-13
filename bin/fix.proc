@@ -1,0 +1,18 @@
+mxram 5000;
+taxname=;
+taxname +64;
+nstates 32;
+watch=;
+report +180/10/10;
+p &FAMILY.aligned.revfasta;
+p tempoid.tre
+sort;
+score;
+best;
+score;
+tsave/ ;
+taxname ] ;
+tchoose 0 ;
+export - oid.tre;
+zz;
+proc/;

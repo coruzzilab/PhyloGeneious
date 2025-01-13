@@ -25,34 +25,37 @@
 use warnings;
 
 my $OID_HOME;
-our @INGROUP;         # Ingroup taxa
-our @OUTGROUP;        # Outgroup taxa
-our $NCPU;            # Number of CPU to be used
+our @INGROUP;     # Ingroup taxa
+our @OUTGROUP;    # Outgroup taxa
+our $NCPU;        # Number of CPU to be used
 our $HPC;         #kind of hpc system default P=PBS,(S=SLUrm, C=CGE)
-our $MAXQS ;   ## make global
+our $MAXQS;       ## make global
+
 BEGIN {
-	$OID_HOME=$ENV{'OID_HOME'};
-	die "Environment variable OID_HOME is not defined ... exiting.\n" if ! defined($OID_HOME);
-	$OID_USER_DIR = $ENV{'OID_USER_DIR'};
-	die "Environment variable OID_USER_DIR is not defined ... exiting.\n"
-	  if !defined($OID_USER_DIR);
+    $OID_HOME = $ENV{'OID_HOME'};
+    die "Environment variable OID_HOME is not defined ... exiting.\n"
+      if !defined($OID_HOME);
+    $OID_USER_DIR = $ENV{'OID_USER_DIR'};
+    die "Environment variable OID_USER_DIR is not defined ... exiting.\n"
+      if !defined($OID_USER_DIR);
 }
 
 use lib "$OID_HOME/lib";
 use OrthologID;
 use strict;
+
 # use to export environment variables
 
 #   initOID();
-   print "before $NCPU, $HPC,$MAXQS\n";
-   $|;
-   #$ENV{'INGROUP'} = @INGROUP;
-   #$ENV{'OUTGROUP'} = @OUTGROUP;
-   #$ENV{'NCPU'} = $NCPU;
-   #$ENV{'HPC'} = $HPC;
-   #$ENV{'MAXQS'} = $MAXQS;
-   sleep(1);
-   print "after $NCPU,$HPC,$MAXQS\n";
-   system("env");
+print "before $NCPU, $HPC,$MAXQS\n";
+$|;
 
+#$ENV{'INGROUP'} = @INGROUP;
+#$ENV{'OUTGROUP'} = @OUTGROUP;
+#$ENV{'NCPU'} = $NCPU;
+#$ENV{'HPC'} = $HPC;
+#$ENV{'MAXQS'} = $MAXQS;
+sleep(1);
+print "after $NCPU,$HPC,$MAXQS\n";
+system("env");
 
