@@ -13,13 +13,13 @@ various programs can not only submit jobs but also monitor them for completion. 
 
 ### Dependencies:
 
-The Phylogeneious pipeline uses various programs to complete the analysis. Please make sure to install the following programs and add the path to their executables to your $PATH variable:
+The Phylogeneious pipeline uses various programs to complete the analysis:
 
-1.  BLAST+ 
-2.  MCL
-3.  MAFFT
-4.  TNT
-5.  Perl > v.5.20 and the DB_File.pm module
+1.  Perl > v.5.20 and the DB_File.pm module
+2.  BLAST+ 
+3.  MCL
+4.  MAFFT
+5.  TNT
 6.  RAxML (raxmlHPC-PTHREADS-AVX) # for the post-analysis total evidence tree search
 7.  Python >= 3.6
 8.  R # optional - for post-analysis GO enrichment
@@ -27,12 +27,7 @@ The Phylogeneious pipeline uses various programs to complete the analysis. Pleas
 10. MMSeqs2 # optional for sequence search
 11. Oblong # optional for gene tree search
 
-The Perl requirements must be installed on your system and discoverable through your $PATH variable. The rest of these programs have been compiled into a docker image available [here](https://hub.docker.com/repository/docker/vsondervan/phylogeneious/general). To install, run 
-`docker pull vsondervan/phylogeneious` 
-or 
-`singularity pull phylogeneious.sif docker://vsondervan/phylogeneious:02.2025`.
-
-### Installation:
+## Installation:
 
 PhyloGeneious can be installed with the following commands:
 ```sh
@@ -41,11 +36,21 @@ cd PhyloGeneious
 ./setup_license.sh
 ```
 
+Perl and the DB_File module must be installed on your system and discoverable through your $PATH variable. The rest of these programs have been compiled into a docker image available [here](https://hub.docker.com/repository/docker/vsondervan/phylogeneious/general). To install, run 
+```sh
+docker pull vsondervan/phylogeneious
+``` 
+or 
+```sh
+singularity pull phylogeneious.sif docker://vsondervan/phylogeneious
+```
+
 ## Run setup:
 
 To run the pipeline, the user can create a project folder by running  
 ```sh
 setup_rundir.sh -d <Path to directory containing named sequence files> 
+
 Optional arguments:
 -a      Run directory name [default: PGrun]
 -s      Tab-delimited file with species IDs, names
@@ -86,14 +91,14 @@ export OID_USER_DIR=/path/to/project/folder
 export OID_MCL=6
 ```
 
-#### Starting PhyloGeneious:
+## Starting PhyloGeneious:
 Once you have set all the above, including the environment variables, run the following command from your project folder:
 
 ```sh
 ./run.sh
 ```
 
-#### Test run:
+### Test run:
 To do a test run of the pipeline, copy the provided testdata directory to your desired location or run the following command:
 ```sh
 <path/to/PhyloGeneious>/setup_rundir.sh -d <path/to/PhyloGeneious>/blastdb -s <path/to/PhyloGeneious>/testdata/testspecies.txt -o EcoliK12MG1655
@@ -101,12 +106,12 @@ To do a test run of the pipeline, copy the provided testdata directory to your d
 ```
 Exact run time will vary depending on resource availability, but a successful test run should complete in less than three hours.
 
-#### General run notes:
+### General run notes:
 - A log of the main job is saved in the "toplog" subfolder
 - PhyloGeneious restarts automatically every 20 hours to avoid job walltime limits. The pipeline uses ".done" files as checkpoints to track its run progress.
 - If TNT jobs are running for long periods without completion or log outputs, double-check the TNT license agreement.
 
-### Outputs:
+## Outputs:
 The pipeline will identify ortholog groups and create concatenated matrices and partition files:
 1. Matrix.nex - Concatenated matrix in a nexus format for searching a total evidence (species) tree using PAUP `default: all ortholog groups`
 2. Matrix.tnt - Concatenated matrix in a TNT expected format for searching a total evidence (species) tree using TNT. It includes only parsimony informative characters to save space/memory
