@@ -8,7 +8,7 @@ use AnyDBM_File;
 use DB_File;
 my $OID_HOME;
 my $OID_USER_DIR;
-my $OID_WRAPPER="";
+my $ENV_WRAPPER;
 my $OID_DATADIR;
 my $TREEPROGRAM;
 my $NCPU;     # cpu's to give blast
@@ -27,7 +27,10 @@ BEGIN {
     die "Environment variable OID_USER_DIR is not defined ... exiting.\n"
       if !defined($OID_USER_DIR);
     $OID_DATADIR = "$OID_USER_DIR/data";
-    $OID_WRAPPER = $ENV{'OID_WRAPPER'};
+    $ENV_WRAPPER  = $ENV{'ENV_WRAPPER'};
+    if (!defined($ENV_WRAPPER)){
+        $ENV_WRAPPER = "";
+    }
     $MYUSER      = `whoami`;
 }
 
@@ -98,7 +101,7 @@ sub xfmthpc {
         foreach my $arg (@args) {
             $argstr .= " $arg";
         }
-        my $submit = q/sbatch / . "$PARAMS $OID_WRAPPER $script $argstr";
+        my $submit = q/sbatch / . "$PARAMS $script $argstr";
         return $submit;
     }
     else {    #HPC = 'P' or undefined
@@ -113,7 +116,7 @@ sub xfmthpc {
                 $argstr .= " arg$argnum" . " $arg";
             }
         }
-        my $submit = q/qsub  / . "$PARAMS $OID_WRAPPER $script $argstr";
+        my $submit = q/qsub / . "$PARAMS $script $argstr";
         return ($submit);
     }
 }
@@ -195,7 +198,7 @@ sub startqs {    #starts a qsub
 #    my $walmem = "mem=$mem"."GB,walltime=$wall";
 #    my $JOB_SCRIPT="$OID_USER_DIR/run_tntmx.sh";
 #       $PARAMS = "-l nodes=1:ppn=$thr,walltime=$wall -l mem=$mem"."GB ";
-#      $submit = q/qsub  /." $PARAMS $OID_WRAPPER $JOB_SCRIPT -v arg1=$fam,arg2=$noftsk,arg3=$thr,arg4=$prefix 2>/dev/null";
+#      $submit = q/qsub  /." $PARAMS $JOB_SCRIPT -v arg1=$fam,arg2=$noftsk,arg3=$thr,arg4=$prefix 2>/dev/null";
         $gb = "$mem" . "GB";
         my @args = ();
         push @args, $fam;
@@ -221,7 +224,7 @@ sub startqs {    #starts a qsub
         }
 
 #      $PARAMS = "-l nodes=1:ppn=2,walltime=04:00:00 -l mem=$mem ";
-#      $submit = q/qsub /." $PARAMS $OID_WRAPPER $JOB_SCRIPT -v arg1=$fam,arg2=2 2>/dev/null";
+#      $submit = q/qsub /." $PARAMS $JOB_SCRIPT -v arg1=$fam,arg2=2 2>/dev/null";
 #      $wall = "04:00:00";
         $prefix = "mafft";
         my @args = ();
@@ -232,7 +235,7 @@ sub startqs {    #starts a qsub
     }
     print "$submit\n";
 
-#    my $pid = open(QS,"qsub -l $PARAMS $OID_WRAPPER $JOB_SCRIPT -v arg1=/"$at/",arg2=/"^$fam.$dol/" 2>/dev/null |");
+#    my $pid = open(QS,"qsub -l $PARAMS $JOB_SCRIPT -v arg1=/"$at/",arg2=/"^$fam.$dol/" 2>/dev/null |");
     my $pid = open( QS, "$submit |" );
 
     my $qs = <QS>;

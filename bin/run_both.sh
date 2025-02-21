@@ -25,8 +25,6 @@
 # Author: Ernest K Lee <elee@amnh.org>
 #
 # mod to run blastp+ by chuck zegar 10/2/2015
-# My PBS queue
-PBSQ="cgsb-s"
 
 # Memory size of higher memory node needed for running mcl
 HIMEM="12GB"
@@ -155,9 +153,9 @@ if [[ ! -s $OID_USER_DIR/blast/blastres.blst ]]; then
 	cp $OID_USER_DIR/blastdb/combined.fa $OID_USER_DIR/blast
 	#        source activate $SOFT
 	#        module load perl
-	$OID_HOME/bin/new_blast_parts.pl #make partn.faa (pgm estimates size
+	$OID_HOME/bin/new_blast_parts.pl #make partn.faa (pgm estimates size #$ENV_WRAPPER 
 	#        NPART = $(/bina/ls OID_USER_DIR/blast/*.* | grep -c ".faa")
-	$OID_HOME/bin/qsblast.pl -g 16 -n 12 -w 12 -q $MAXQS
+	$OID_HOME/bin/qsblast.pl -g 16 -n 12 -w 12 -q $MAXQS #$ENV_WRAPPER 
 	#fi
 	#echo 'proc finished'
 	if ! [[ -f $OID_USER_DIR/blast/blastres.blst && -f $OID_USER_DIR/blast/genelen.blst ]]; then
@@ -178,7 +176,7 @@ if ! /bin/ls -d $OID_USER_DIR/data/[1-9] >/dev/null 2>&1; then
 	echo "Creating families ..."
 	#	if [[ -f $OID_USER_DIR/blast/clusters ]]; then
 	# Clustering done, just create family directories
-	$OID_HOME/bin/orthologid.pl -f
+	$OID_HOME/bin/orthologid.pl -f #$ENV_WRAPPER 
 	#	else
 	#		JOBID=$(qsub -l nodes=1:ppn=$NCPU,walltime=12:00:00 $JOB_SCRIPT -v arg1="-f" | grep '^[0-9]')
 	#		# Wait for clustering to finish
@@ -197,11 +195,11 @@ else
 fi
 echo "running new job select"
 ## new job to grep all data subdir for Family size
-$OID_HOME/bin/rdfamdb.pl
+$OID_HOME/bin/rdfamdb.pl #$ENV_WRAPPER 
 #
 rm log/job/schedone
 while [[ ! -f log/job/schedone ]]; do
-	$OID_HOME/bin/orthologid.pl -s 'hello'
+	$OID_HOME/bin/orthologid.pl -s 'hello' #$ENV_WRAPPER 
 	if [[ ! -f log/job/schedone ]]; then
 		echo "orthologid.pl -s aborted before finish"
 		date

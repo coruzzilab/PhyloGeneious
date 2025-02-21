@@ -8,6 +8,7 @@ use warnings;
 
 my $OID_HOME;
 my $OID_USER_DIR;
+my $ENV_WRAPPER;
 
 BEGIN {
     $OID_HOME = $ENV{'OID_HOME'};
@@ -16,6 +17,10 @@ BEGIN {
     $OID_USER_DIR = $ENV{'OID_USER_DIR'};
     die "Environment variable OID_USER_DIR is not defined ... exiting.\n"
       if !defined($OID_USER_DIR);
+    $ENV_WRAPPER  = $ENV{'ENV_WRAPPER'};
+    if (!defined($ENV_WRAPPER)){
+        $ENV_WRAPPER = "";
+    }
 }
 
 use lib "$OID_HOME/lib";
@@ -33,7 +38,12 @@ my %sztaxa      = ()
   ;  #this is a dictionary of the size of all families in current data directory
 
 if ( !-s "$familyDB" ) {
-    my $rc = system("$OID_HOME/bin/sizfamdb.pl");
+    if (! $ENV_WRAPPER eq "") {
+        my $rc = system("$OID_HOME/bin/sizfamdb.pl"); #$ENV_WRAPPER 
+    }
+    else {
+        my $rc = system("$OID_HOME/bin/sizfamdb.pl");
+    }
 }
 my $badtie  = 0;
 my $cntmiss = 0;
@@ -67,8 +77,14 @@ if ( $cntmiss > 0 or $badtie ) {
     }
     unlink "$familyDB";
     unlink "$familyDB.db";    #on mac
-    my $rc = system("$OID_HOME/bin/rdfamdb.pl retry");
-    exit($rc);
+    if (! $ENV_WRAPPER eq "") {
+        my $rc = system("$OID_HOME/bin/rdfamdb.pl retry"); #$ENV_WRAPPER 
+        exit($rc);
+    }
+    else {
+        my $rc = system("$OID_HOME/bin/rdfamdb.pl retry");
+        exit($rc);
+    }
 }
 exit(0);
 

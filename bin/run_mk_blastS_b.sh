@@ -29,11 +29,11 @@ PATH=$OID_BIN:$PATH
 
 #cd \$OID_USER_DIR
 #test.pl
-$OID_HOME/bin/mk_blast_parts.pl $arg1
+$OID_HOME/bin/mk_blast_parts.pl $arg1 #$ENV_WRAPPER 
 
 EOF
 # End job script
 chmod a+x $JOB_SCRIPT
 echo "$JOB_SCRIPT has $NCPU"
-#            qsub -l nodes=1:ppn=$arg2 ${OID_WRAPPER} $JOB_SCRIPT;
-sbatch ${OID_WRAPPER} $JOB_SCRIPT &
+#            qsub -l nodes=1:ppn=$arg2 $JOB_SCRIPT;
+sbatch $JOB_SCRIPT &

@@ -88,7 +88,7 @@ echo "mafft completed"
 
 # count family size
 echo "counting family size"
-python $OID_HOME/bin/count_families.py $OID_DATADIR $OID_USER_DIR/family_cnt
+$ENV_WRAPPER python $OID_HOME/bin/count_families.py $OID_DATADIR $OID_USER_DIR/family_cnt
 
 declare -A family_type
 while IFS=, read dir type || [[ $type ]]; do
@@ -112,7 +112,7 @@ declare -p family_list > $OID_USER_DIR/family_list.sh
 
 # reverse translation
 echo "start reverse translating"
-python $OID_HOME/bin/reverse_translate_families.py $OID_DATADIR $OID_DATADIR
+$ENV_WRAPPER python $OID_HOME/bin/reverse_translate_families.py $OID_DATADIR $OID_DATADIR
 
 echo "checking reverse translate output files"
 missing_output=()

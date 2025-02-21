@@ -10,8 +10,6 @@
 
 if [ "$SLURM_ARRAY_TASK_ID" == "" ]; then exit; fi
 
-# export OID_USER_DIR=/scratch/$USER/testdata
-
 readarray -t families < $OID_USER_DIR/FAMILY
 
 thread=4

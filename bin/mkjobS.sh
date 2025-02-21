@@ -19,7 +19,7 @@ time
 echo 'arg1 ',\$1
 echo 'arg2 ',\$2
 
-$OID_HOME/bin/orthologid.pl \$1 \$2
+$OID_HOME/bin/orthologid.pl \$1 \$2 #$ENV_WRAPPER 
 if [[ "\$1" == "-b" ]]; then
 	#touch blast/.\$2.done
 	echo ".\$2.done" >> blast/.Parts.done

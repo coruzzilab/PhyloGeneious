@@ -1,15 +1,9 @@
 #!/bin/ksh
 
 #PBS -l nodes=1:ppn=1,walltime=24:00:00
-#PBS -q cgsb-s
 #PBS -l mem=22GB
 #PBS -N plantblast
-##PBS -M cmz209@nyu.edu
-#PBS -m abe
 #PBS -j oe
-##PBS -e localhost:/scratch/cmz209/orthotnt/oidTest8/${PBS_JOBNAME}.e${PBS_JOBID}
-##PBS -o localhost:/scratch/cmz209/orthotnt/oidTest8/${PBS_JOBNAME}.o${PBS_JOBID}
-##PBS  -o $OID_USER_DIR
 #PBS -V
 cd $OID_USER_DIR
 $OID_USER_DIR/new_blast.sh

@@ -38,8 +38,8 @@ main() {
 		sed -i "s/\(tread '\)[0-9]*/\1${NTREE}/" ${prefix}.rat
 		# cp ${prefix}.rat $TESTDATA/${prefix}.rat
 #tree fusion with tnt
-        bash $OID_HOME/bin/make_tfproc.sh $rtFamily ${prefix}.rat $out
-		tnt p $out/oblong_treefuse.proc
+		bash $OID_HOME/bin/make_tfproc.sh $rtFamily ${prefix}.rat $out
+		$ENV_WRAPPER tnt p $out/oblong_treefuse.proc
 		cp oid.tre $out/oid.tre
 		echo .$fam.fam.done >> $OID_DATADIR/.fam.done
 #approx. tree fusion with oblong

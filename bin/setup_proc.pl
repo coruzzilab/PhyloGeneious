@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-## this is a paraphrase ofdameon's script to do a lot of rathchets
+## this is a paraphrase of damon's script to do a lot of ratchets
 use Time::Piece;
 use Time::Seconds;
 use Cwd;
@@ -9,7 +9,6 @@ use POSIX qw/ceil/;
 my $OID_HOME;
 my $OID_USER_DIR;
 my $OID_BIN;
-my $OID_WRAPPER;
 my $TREEPROGRAM;
 
 BEGIN {
@@ -19,7 +18,6 @@ BEGIN {
     $OID_USER_DIR = $ENV{'OID_USER_DIR'};
     die "Environment variable OID_USER_DIR is not defined ... exiting.\n"
       if !defined($OID_USER_DIR);
-    $OID_WRAPPER = $ENV{'OID_WRAPPER'};
     $OID_BIN = "$OID_HOME/bin";
 }
 
@@ -87,7 +85,7 @@ my $timeout;
 if ($use_oblong == 1) {
     my $rtn = "$OID_BIN/oblong_ratbld2_subprocs.sbatch";
     $rc = system(
-        "sbatch --time=$time -o logs/${prefix}.%J.log ${OID_WRAPPER} $rtn"
+        "sbatch --time=$time -o logs/${prefix}.%J.log $rtn"
         );
     $timeout = "00:30:00";
 }

@@ -89,7 +89,7 @@ our $VERSION = '0.01';
 # Local variables
 my $OID_HOME;                     # OrthologID main directory
 my $OID_USER_DIR;                 # OrthologID user run directory
-my $OID_WRAPPER = "";                  # OrthologID container wrapper script
+my $ENV_WRAPPER;                  # OrthologID container environment wrapper script
 my $OID_CONF;                     # OrthologID config file
 my $OID_DATADIR;                  # OrthologID guide tree data directory
 our $OID_BLASTDIR;                # Directory to store OrthologID blast results
@@ -136,8 +136,9 @@ die "OID_HOME environment variable undefined!\n"     if !$ENV{'OID_HOME'};
 die "OID_USER_DIR environment variable undefined!\n" if !$ENV{'OID_USER_DIR'};
 $OID_HOME       = $ENV{'OID_HOME'};
 $OID_USER_DIR   = $ENV{'OID_USER_DIR'};
-if ($ENV{'OID_WRAPPER'}) {
-    $OID_WRAPPER    = $ENV{'OID_WRAPPER'};
+$ENV_WRAPPER  = $ENV{'ENV_WRAPPER'};
+if (!defined($ENV_WRAPPER)){
+    $ENV_WRAPPER = "";
 }
 $OID_BLASTDIR   = "$OID_USER_DIR/blast";
 $BLAST_RES_DB   = "$OID_BLASTDIR/blastres.blst";
@@ -401,7 +402,7 @@ sub fmthpc {
         foreach my $arg (@args) {
             $argstr .= " $arg";
         }
-        my $submit = q/sbatch / . "$PARAMS $OID_WRAPPER $script $argstr";
+        my $submit = q/sbatch / . "$PARAMS $script $argstr";
         return $submit;
     }
     else {    #HPC = 'P' or undefined
@@ -418,7 +419,7 @@ sub fmthpc {
                 $argstr .= "," if ( $argnum < $narg );
             }
         }
-        my $submit = q/qsub  / . "$PARAMS $OID_WRAPPER $script $argstr";
+        my $submit = q/qsub  / . "$PARAMS $script $argstr";
         return ($submit);
     }
 }
@@ -744,21 +745,21 @@ sub allBlast {
 #            "$BLASTALL -a $numProc -p blastp -d $sp -I -e $eCutOff -m 8 -i $tmpFile";
             if ($SEARCHTYPE eq 'B') {
                 $blastCmd =
-                    "$BLASTALL -db $sp -query $blstinfile -outfmt 6 -evalue $eCutOff "
+                    "$ENV_WRAPPER $BLASTALL -db $sp -query $blstinfile -outfmt 6 -evalue $eCutOff "
                     . "-num_threads $numProc  -out $outfile";
             }
             elsif ($SEARCHTYPE eq 'D') {
                 my $spdb = $OID_USER_DIR . "/blastdb/" . $sp . ".dmnd";
                 # $eCutOff = 
                 $blastCmd =
-                    "/scratch/vms351/diamond $BLASTALL --db $spdb --query $blstinfile --evalue $eCutOff "
+                    "$ENV_WRAPPER /scratch/vms351/diamond $BLASTALL --db $spdb --query $blstinfile --evalue $eCutOff "
                     . "--threads $numProc --out $outfile --outfmt 6 --ultra-sensitive --max-target-seqs 500";
             }
             elsif ($SEARCHTYPE eq 'M') {
                 my $spdb = $OID_USER_DIR . "/blastdb/" . $sp . ".DB";
                 # $eCutOff = 
                 $blastCmd =
-                    "/scratch/vms351/mmseqs/bin/mmseqs easy-search $blstinfile $spdb $outfile tmp " 
+                    "$ENV_WRAPPER /scratch/vms351/mmseqs/bin/mmseqs easy-search $blstinfile $spdb $outfile tmp " 
                     . "--search-type 1 --format-mode 0 -e $eCutOff --threads $numProc -s 7.5 --max-seqs 500";
             }
             else {
@@ -768,9 +769,11 @@ sub allBlast {
         my $blastOutput = `$blastCmd`;
         $t = localtime;
         print "$t complete blast $sp rc $blastOutput\n" if $verbose > 1;
-        open( XX, ">>$OID_BLASTDIR/.$sp.Part.done" );  #create a done file
-            print XX ".$sp.Part$prefix.done\n";
-        close XX;
+        if (-f $outfile) {
+            open( XX, ">>$OID_BLASTDIR/.$sp.Part.done" );  #create a done file
+                print XX ".$sp.Part$prefix.done\n";
+            close XX;
+        }
 
         #        my @blastResults = split /\n/, $blastOutput;
         #        foreach my $res(@blastResults){
@@ -921,14 +924,14 @@ sub mclmcx() {
     if ( $bllen < 1000 ) {    #gigabyte
         print "blastres len $bllen MB use mcxload stream-mirror\n";
         open( MFH,
-"|mcxload -abc - --stream-mirror -re max -o $mciFile -write-tab $tabFile"
+"|$ENV_WRAPPER mcxload -abc - --stream-mirror -re max -o $mciFile -write-tab $tabFile"
         );
     }
     else {
         print "big blastres len $bllen MB use mcxload ri max\n";
 
         open( MFH,
-"|mcxload -abc - --write-binary -ri max -re max -o $mciFile -write-tab $tabFile"
+"|$ENV_WRAPPER mcxload -abc - --write-binary -ri max -re max -o $mciFile -write-tab $tabFile"
         );
     }
 
@@ -1023,14 +1026,14 @@ sub mclCluster() {
         if ( $bllen < 1000 ) {    #gigabyte
             print "blastres len $bllen MB use mcxload stream-mirror\n";
             open( MFH,
-"|mcxload -abc - --stream-mirror -re max -o $mciFile -write-tab $tabFile"
+"|$ENV_WRAPPER mcxload -abc - --stream-mirror -re max -o $mciFile -write-tab $tabFile"
             );
         }
         else {
             print "big blastres len $bllen MB use mcxload ri max\n";
 
             open( MFH,
-"|mcxload -abc - --write-binary -ri max -re max -o $mciFile -write-tab $tabFile"
+"|$ENV_WRAPPER mcxload -abc - --write-binary -ri max -re max -o $mciFile -write-tab $tabFile"
             );
         }
 
@@ -1105,8 +1108,14 @@ sub mclCluster() {
     );
 
     #    push(@mclArgs, "-te", $numProc) if $numProc > 1;
-    my $status = system( $mcl_exe, @mclArgs );
-    die "$thisFunc: $mcl_exe exit status = $?" unless $status == 0;
+    if (! $ENV_WRAPPER eq "") {
+        my $status = system($ENV_WRAPPER, $mcl_exe, @mclArgs );
+        die "$thisFunc: $mcl_exe exit status = $?" unless $status == 0;
+    }
+    else {
+        my $status = system( $mcl_exe, @mclArgs );
+        die "$thisFunc: $mcl_exe exit status = $?" unless $status == 0;
+    }
     $ct = localtime;
     print "$ct mcl done.\n";
     open( XX, ">$clusterdone" );    #create a done file
@@ -1500,8 +1509,14 @@ sub makeTree {
             # Execute tnt
 
             ###RUNTNT:
-            my $status = system("tnt p $prefix.proc 0</dev/null 1>&0 2>&0");
-            die "$thisFunc: TNT error: $?" unless $status == 0;
+            if (! $ENV_WRAPPER eq "") {
+                my $status = system("$ENV_WRAPPER tnt p $prefix.proc 0</dev/null 1>&0 2>&0");
+                die "$thisFunc: TNT error: $?" unless $status == 0;
+            }
+            else {
+                my $status = system("tnt p $prefix.proc 0</dev/null 1>&0 2>&0");
+                die "$thisFunc: TNT error: $?" unless $status == 0;
+            }
 
             #            print "would have run tnt p $prefix.proc\n";
         }
@@ -1519,7 +1534,12 @@ sub makeTree {
                 close(PROC);
                 select($oldFH);
             }
-            my $status = system("runtnta.pl $maxcut ");
+            if (! $ENV_WRAPPER eq "") {
+                my $status = system("runtnta.pl $maxcut "); #$ENV_WRAPPER 
+            }
+            else {
+                my $status = system("runtnta.pl $maxcut ");
+            }
 
             #           print "would have run runtnt.py $prefix $maxcut\n";
         }
@@ -1537,7 +1557,7 @@ sub makeTree {
 sub restartme {
 
     #    my $PARAMS = "-l nodes=1:ppn=1 ";
-    #    my $MY_SCRIPT="qsub $PARAMS $OID_WRAPPER $OID_USER_DIR/pipe.pbs";
+    #    my $MY_SCRIPT="qsub $PARAMS $OID_USER_DIR/pipe.pbs";
     my $MY_SCRIPT = "$OID_HOME/bin/pipe.pbs";
     if ( $ENV{"MY_SHELL"} ) {
         $MY_SCRIPT = $ENV{"MY_SHELL"};
@@ -1547,7 +1567,7 @@ sub restartme {
     #    my $submit = q/qsub  /."$PARAMS $MY_SCRIPT";
     my $submit = "";
     if ( $HPC =~ /S/ ) {
-        $MY_SCRIPT = "-o toplog/%J.out $OID_WRAPPER $MY_SCRIPT";
+        $MY_SCRIPT = "-o toplog/%J.out $MY_SCRIPT";
         $submit    = q/sbatch / . "$MY_SCRIPT";
     }
     else {
@@ -1613,7 +1633,7 @@ sub strtgrp {    # starts group qsub
     print "group cpu $grpcpu mem $gmem", "GB\n";
 
 #        my $PARAMS = "-l nodes=1:ppn=$grpcpu -l mem=$gmem"."GB,walltime=12:00:00";
-#        my $submit = q/qsub  /."$PARAMS $OID_WRAPPER $GP_SCRIPT -v arg1=$grouplo,arg2=$grouphi,arg3=$grpcpu".' 2>/dev/null';
+#        my $submit = q/qsub  /."$PARAMS $GP_SCRIPT -v arg1=$grouplo,arg2=$grouphi,arg3=$grpcpu".' 2>/dev/null';
     my $nt   = 1;
     my $wall = "12:00:00";
     my $gb   = "$gmem" . "GB";

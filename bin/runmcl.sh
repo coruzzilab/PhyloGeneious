@@ -1,1 +1,1 @@
-sbatch -N 1 --ntasks-per-node 1 -c 1 -o toplog/%J.out -t 12:00:00 --mem 16GB ${OID_WRAPPER} $OID_HOME/bin/runmcl.pl 16GB 20
+sbatch -N 1 --ntasks-per-node 1 -c 1 -o toplog/%J.out -t 12:00:00 --mem 16GB --wrap"$OID_HOME/bin/runmcl.pl 16GB 20" #${ENV_WRAPPER} 

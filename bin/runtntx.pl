@@ -9,6 +9,11 @@ my @opentbl = ();
 my @tntcmd = ();
 my $nproc  = 2;
 my $tntstr = 'pf';
+my $ENV_WRAPPER;
+$ENV_WRAPPER  = $ENV{'ENV_WRAPPER'};
+if (!defined($ENV_WRAPPER)){
+    $ENV_WRAPPER = "";
+}
 
 my $savDir = getcwd;
 print "runtnt in $savDir\n";
@@ -33,8 +38,14 @@ foreach my $tnt (@tntcmd) {
     my $pid;
     sleep 2;
     next if $pid = fork;    #parent
-    my $status = system("tnt p $tnt 0</dev/null 1>&0 2>&0");
-    print "tnt with $tnt exit $status\n";
+    if (! $ENV_WRAPPER eq "") {
+        my $status = system("$ENV_WRAPPER tnt p $tnt 0</dev/null 1>&0 2>&0");
+        print "tnt with $tnt exit $status\n";
+    }
+    else {
+        my $status = system("tnt p $tnt 0</dev/null 1>&0 2>&0");
+        print "tnt with $tnt exit $status\n";
+    }
     exit;
 }
 1 while ( wait() != -1 );
@@ -55,8 +66,13 @@ foreach my $tnt (@tntcmd) {
 #    }
 my $one    = '1';
 my $tnt    = "$tntstr$one.proc";
-my $status = system("tnt p $tnt 0</dev/null 1>&0 2>&0");
-print "tnt with $tnt exit $status\n";
+if (! $ENV_WRAPPER eq "") {
+    my $status = system("$ENV_WRAPPER tnt p $tnt 0</dev/null 1>&0 2>&0");
+    print "tnt with $tnt exit $status\n";
+else {
+    my $status = system("tnt p $tnt 0</dev/null 1>&0 2>&0");
+    print "tnt with $tnt exit $status\n";
+}
 
 my $lsv = `ls -l $tntstr*.tre`;
 print "ls value $lsv\n";

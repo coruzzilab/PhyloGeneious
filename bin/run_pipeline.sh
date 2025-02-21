@@ -25,8 +25,6 @@
 # Author: Ernest K Lee <elee@amnh.org>
 #
 # mod to run blastp+ by chuck zegar 10/2/2015
-# My PBS queue
-PBSQ="cgsb-s"
 
 # Memory size of higher memory node needed for running mcl
 HIMEM="128GB"
@@ -155,12 +153,12 @@ if [[ ! -s $OID_USER_DIR/blast/blastres.blst ]]; then
 	cp $OID_USER_DIR/blastdb/combined.fa $OID_USER_DIR/blast
 	#        source activate $SOFT
 	#        module load perl
-	$OID_HOME/bin/new_blast_parts.pl #make partn.faa (pgm estimates size
+	$OID_HOME/bin/new_blast_parts.pl #make partn.faa (pgm estimates size #$ENV_WRAPPER 
 	#        NPART = $(/bina/ls OID_USER_DIR/blast/*.* | grep -c ".faa")
-	$OID_HOME/bin/qsblast.pl -g 16 -n 12 -w 12 -q $MAXQS
+	$OID_HOME/bin/qsblast.pl -g 16 -n 12 -w 12 -q $MAXQS #$ENV_WRAPPER 
 	#fi
 	#echo 'proc finished'
-	if ! [[ -f $OID_USER_DIR/blast/blastres.blst && -f $OID_USER_DIR/blast/genelen.blst ]]; then
+	if ! [[ -s $OID_USER_DIR/blast/blastres.blst && -s $OID_USER_DIR/blast/genelen.blst ]]; then
 		echo "Error: failed to generate BLAST results database"
 		exit 1
 	else
@@ -180,7 +178,7 @@ if [[ ! -f $OID_USER_DIR/data/.family.done ]]; then
 	#	if [[ -f $OID_USER_DIR/blast/clusters ]]; then
 	# Clustering done, just create family directories
 	#		$OID_HOME/bin/orthologid.pl -f
-	$OID_HOME/bin/runmcl.pl $HIMEM 20 # $MY_MEM 20
+	$OID_HOME/bin/runmcl.pl $HIMEM 20 # $MY_MEM 20 #$ENV_WRAPPER 
 	#	else
 	#		JOBID=$(qsub -l nodes=1:ppn=$NCPU,walltime=12:00:00 $JOB_SCRIPT -v arg1="-f" | grep '^[0-9]')
 	#		# Wait for clustering to finish
@@ -199,11 +197,13 @@ else
 fi
 echo "running new job select"
 ## new job to grep all data subdir for Family size
-$OID_HOME/bin/rdfamdb.pl
+$OID_HOME/bin/rdfamdb.pl #$ENV_WRAPPER 
+echo "Archiving small clusters..."
+tar -xzf $OID_USER_DIR/data/small_clusters.tar.gz $OID_USER_DIR/data/S[1-9]* --remove-files
 #
 rm log/job/schedone
 while [[ ! -f log/job/schedone ]]; do
-	$OID_HOME/bin/orthologid.pl -s 'hello'
+	$OID_HOME/bin/orthologid.pl -s 'hello' #$ENV_WRAPPER 
 	if [[ ! -f log/job/schedone ]]; then
 		echo "orthologid.pl -s aborted before finish"
 		date
@@ -213,7 +213,7 @@ date
 time
 # Extract orthologs
 echo "Extracting orthologs ..."
-$OID_BIN/orthologid.pl -O
+$OID_BIN/orthologid.pl -O #$ENV_WRAPPER 
 date
 time
 
@@ -224,14 +224,14 @@ source $OID_BIN/checktrees.sh
 if [[ $RERUN -eq 1 ]]; then
 	# Extract orthologs again
 	echo "Extracting skipped orthologs ..."
-	$OID_BIN/orthologid.pl -O
+	$OID_BIN/orthologid.pl -O #$ENV_WRAPPER 
 	date
 	time
 fi
 
 # Generate big matrix
 echo 'Generating matrix ...'
-$OID_BIN/orth2matrix.pl
+$OID_BIN/orth2matrix.pl #$ENV_WRAPPER 
 
 date
 time
@@ -241,8 +241,8 @@ echo "Tree search ..."
 if [[ -f jac.tre ]]; then
 	echo "Tree file already exists"
 else
-	tnt bground p $OID_HOME/PostProcessing/mpt.proc
-	tnt bground p $OID_HOME/PostProcessing/jac.proc
+	$ENV_WRAPPER tnt bground p $OID_HOME/PostProcessing/mpt.proc
+	$ENV_WRAPPER tnt bground p $OID_HOME/PostProcessing/jac.proc
 fi
 while sleep 300; do
 	#	if [[ ! -f Jacknife.tre ]]; then
@@ -259,9 +259,9 @@ date
 time
 
 echo "Processing trees..."
-python $OID_HOME/PostProcessing/fix_tree.py mpt.tre mpt_fixed.tre
-python $OID_HOME/PostProcessing/fix_tree.py mpt.nel mpt_nel_fixed.tre
-python $OID_HOME/PostProcessing/fix_tree.py jac.tre jac_fixed.tre
+$ENV_WRAPPER python $OID_HOME/PostProcessing/fix_tree.py mpt.tre mpt_fixed.tre
+$ENV_WRAPPER python $OID_HOME/PostProcessing/fix_tree.py mpt.nel mpt_nel_fixed.tre
+$ENV_WRAPPER python $OID_HOME/PostProcessing/fix_tree.py jac.tre jac_fixed.tre
 
 echo "Pipeline complete!"
 date

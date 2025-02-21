@@ -44,7 +44,7 @@ if [[ -s $OUTPUT ]]; then
 fi
 
 # Check MAFFT
-if ! which mafft >/dev/null 2>/dev/null; then
+if ! $ENV_WRAPPER which mafft >/dev/null 2>/dev/null; then
 	echo -u2 "MAFFT is not installed or not found."
 	exit 1
 fi
@@ -59,14 +59,14 @@ else
 fi
 
 echo -n "Using $MAFFT_EXE ... "
-$MAFFT_EXE --anysymbol --quiet $INPUT >$OUTPUT
+$ENV_WRAPPER $MAFFT_EXE --anysymbol --quiet $INPUT >$OUTPUT
 status=$?
 
 # Re-run mafft if output is empty...
 if [[ ! -s $OUTPUT ]]; then
 	echo -n "failed\nRe-running mafft ... "
 	MAFFT_EXE='mafft --auto'
-	$MAFFT_EXE --anysymbol --quiet $INPUT >$OUTPUT
+	$ENV_WRAPPER $MAFFT_EXE --anysymbol --quiet $INPUT >$OUTPUT
 	status=$?
 fi
 

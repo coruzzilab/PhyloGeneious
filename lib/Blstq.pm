@@ -156,7 +156,7 @@ sub fmthpc {
         foreach my $arg (@args) {
             $argstr .= " $arg";
         }
-        my $submit = q/sbatch / . "${OID_WRAPPER} $PARAMS $script $argstr";
+        my $submit = q/sbatch / . "$PARAMS $script $argstr";
         return $submit;
     }
     else {    #HPC = 'P' or undefined

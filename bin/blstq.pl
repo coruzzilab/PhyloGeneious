@@ -125,7 +125,7 @@ sub runBlast {
 #		$blastCmd =
 #		    "$BLASTALL -a $numProc -p blastp -d $sp -I -e $eCutOff -m 8 -i $tmpFile";
         $blastCmd =
-            "$Blastall -db $sp -query $blstinfile -evalue $eval "
+            "\$ENV_WRAPPER $Blastall -db $sp -query $blstinfile -evalue $eval "
           . "-num_threads $numProc  -out $outfile $PARAM";
 
         my $blastOutput = `$blastCmd`;

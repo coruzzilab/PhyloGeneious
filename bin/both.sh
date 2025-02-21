@@ -12,4 +12,4 @@
 echo hello
 #srun -p serial --mem 22GB -n 1 -c 8 -o job.%J.out $OID_HOME/bin/run_just_bl.sh&
 export MY_SHELL=$0
-sbatch -c 4 --mem 22GB -t 04:00:00 -o toplog/%J.out ${OID_WRAPPER} $OID_HOME/bin/run_both.sh
+sbatch -c 4 --mem 22GB -t 04:00:00 -o toplog/%J.out $OID_HOME/bin/run_both.sh

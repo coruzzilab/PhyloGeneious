@@ -12,6 +12,7 @@ my $ncpub = 0;
 my $gb;       #gb to run blast
 my $MYUSER;
 my $myjob;
+my $ENV_WRAPPER;
 
 BEGIN {
     $OID_HOME = $ENV{'OID_HOME'};
@@ -22,6 +23,10 @@ BEGIN {
       if !defined($OID_USER_DIR);
     $OID_BLAST = "$OID_USER_DIR/blast";
     $MYUSER    = `whoami`;
+    $ENV_WRAPPER  = $ENV{'ENV_WRAPPER'};
+    if (!defined($ENV_WRAPPER)){
+        $ENV_WRAPPER = "";
+    }
 }
 
 use lib "$OID_HOME/lib";
@@ -442,6 +447,13 @@ while (1) {
 }    # loop until all tasks done
 $t = localtime;
 print "$t all blasts done\n";
-my $rc = system("$OID_HOME/bin/orthologid.pl -B");
-$t = localtime;
-print "$t ran ortholodid -B rc $rc\n";
+if (! $ENV_WRAPPER eq "") {
+    my $rc = system("$OID_HOME/bin/orthologid.pl -B"); #$ENV_WRAPPER 
+    $t = localtime;
+    print "$t ran ortholodid -B rc $rc\n";
+}
+else {
+    my $rc = system("$OID_HOME/bin/orthologid.pl -B");
+    $t = localtime;
+    print "$t ran ortholodid -B rc $rc\n";
+}

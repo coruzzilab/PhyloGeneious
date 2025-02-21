@@ -2,7 +2,6 @@
 #
 # mod to run blastp+ by chuck zegar 10/2/2015
 # My PBS queue
-PBSQ="cgsb-s"
 arg1=${1:-1}
 arg2=${2:-1}
 print "called with $arg1,$arg2"
@@ -21,9 +20,7 @@ cat <<EOF >$JOB_SCRIPT
 
 #PBS -S /bin/bash
 #PBS -j oe
-##PBS -o /scratch/cmz209/orthotnt/oidTest9/
 #PBS -o log/job
-#PBS -q $PBSQ
 #PBS -l mem=$HIMEM
 #PBS -l walltime=12:00:00
 #PBS -N $OID_RUN
@@ -33,7 +30,7 @@ PATH=$OID_BIN:$PATH
 
 cd \$OID_USER_DIR
 #test.pl
-$OID_HOME/bin/mk_blast_parts.pl $arg1
+$OID_HOME/bin/mk_blast_parts.pl $arg1 #$ENV_WRAPPER 
 
 EOF
 # End job script

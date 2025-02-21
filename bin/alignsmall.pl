@@ -8,6 +8,7 @@ use warnings;
 
 my $OID_HOME;
 my $OID_USER_DIR;
+my $ENV_WRAPPER;
 
 BEGIN {
     $OID_HOME = $ENV{'OID_HOME'};
@@ -16,6 +17,10 @@ BEGIN {
     $OID_USER_DIR = $ENV{'OID_USER_DIR'};
     die "Environment variable OID_USER_DIR is not defined ... exiting.\n"
       if !defined($OID_USER_DIR);
+    $ENV_WRAPPER  = $ENV{'ENV_WRAPPER'};
+    if (!defined($ENV_WRAPPER)){
+        $ENV_WRAPPER = "";
+    }
 }
 
 use lib "$OID_HOME/lib";
@@ -43,7 +48,11 @@ foreach my $dir (<S[1-9]*>) {
     copy( "$dir/FAMILY", "$smalldir/$sfilenm" );
     my $alignam = substr( $sfilenm, 0, -3 ) . 'aligned';
     chdir $smalldir;
-    my $rc = system("mafft --auto --quiet --anysymbol $sfilenm>$alignam");
+    if (! $ENV_WRAPPER eq "") {
+        my $rc = system("$ENV_WRAPPER mafft --auto --quiet --anysymbol $sfilenm>$alignam");
+    else {
+        my $rc = system("mafft --auto --quiet --anysymbol $sfilenm>$alignam");
+}
 
     chdir $OID_DATADIR;
 

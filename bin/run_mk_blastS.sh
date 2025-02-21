@@ -23,8 +23,8 @@ PATH=$OID_BIN:$PATH
 
 echo "in run_test.sh $arg1"
 #source activate $SOFT
-#srun -n 1 -c 4  -l -o log/job/%J.out $OID_WRAPPER $OID_HOME/bin/mk_blast_parts.pl $arg1&
-$OID_HOME/bin/mk_blast_parts.pl $arg1
+#srun -n 1 -c 4  -l -o log/job/%J.out $OID_HOME/bin/mk_blast_parts.pl $arg1&
+$OID_HOME/bin/mk_blast_parts.pl $arg1 #$ENV_WRAPPER 
 echo hello from run_test.sh $arg1
 echo slurm job \$SLURM_LOCALID
 echo cpus \$SLURM_CPUS_PER_TASK
@@ -38,7 +38,7 @@ chmod a+x $JOB_SCRIPT
 #$JOB_SCRIPT
 #module rm  perl
 #source  deactivate
-sbatch -N 1 -c 4 -o log/job/%J.out $OID_WRAPPER $JOB_SCRIPT &
+sbatch -N 1 -c 4 -o log/job/%J.out $JOB_SCRIPT &
 sleep 2
 for JOBID in $(jobs -p); do
 	echo srun starts as $JOBID

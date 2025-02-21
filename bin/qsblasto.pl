@@ -11,6 +11,7 @@ my $NCPU;    # cpu's to give blast
 my $gb;      #gb to run blast
 my $MYUSER;
 my $myjob;
+my $ENV_WRAPPER;
 
 BEGIN {
     $OID_HOME = $ENV{'OID_HOME'};
@@ -20,8 +21,11 @@ BEGIN {
     die "Environment variable OID_USER_DIR is not defined ... exiting.\n"
       if !defined($OID_USER_DIR);
     $OID_BLAST = "$OID_USER_DIR/blast";
-    $OID_WRAPPER = $ENV{'OID_WRAPPER'};
     $MYUSER    = `whoami`;
+    $ENV_WRAPPER  = $ENV{'ENV_WRAPPER'};
+    if (!defined($ENV_WRAPPER)){
+        $ENV_WRAPPER = "";
+    }
 }
 
 use lib "$OID_HOME/lib";
@@ -38,7 +42,7 @@ sub fmthpc {
         foreach my $arg (@args) {
             $argstr .= " $arg";
         }
-        my $submit = q/sbatch / . "$PARAMS $OID_WRAPPER $script $argstr";
+        my $submit = q/sbatch / . "$PARAMS $script $argstr";
         return $submit;
     }
     else {    #HPC = 'P' or undefined
@@ -53,7 +57,7 @@ sub fmthpc {
                 $argstr .= " arg$argnum" . " $arg";
             }
         }
-        my $submit = q/qsub  / . "$PARAMS $OID_WRAPPER $script $argstr";
+        my $submit = q/qsub  / . "$PARAMS $script $argstr";
         return ($submit);
     }
 }
@@ -112,7 +116,7 @@ sub startqs {    #starts a qsub
     ( my $rqs,, my $blid, my $wall ) = @_;
     my $JOB_SCRIPT = "$OID_USER_DIR/run_oid_job.sh";
 
-#    my $submit = q/qsub  /."$PARAMS $OID_WRAPPER $JOB_SCRIPT".q/ -v arg1="-b"/.",arg2=$blid  2>/dev/null";
+#    my $submit = q/qsub  /."$PARAMS $JOB_SCRIPT".q/ -v arg1="-b"/.",arg2=$blid  2>/dev/null";
     my $nt   = 1;
     my @args = ();
     push @args, "-b";
@@ -121,7 +125,7 @@ sub startqs {    #starts a qsub
     $submit .= " 2>/dev/null";
     print "$submit\n";
 
-#    my $pid = open(QS,"qsub -l $PARAMS $OID_WRAPPER $JOB_SCRIPT -v arg1=/"$at/",arg2=/"^$fam.$dol/" 2>/dev/null |");
+#    my $pid = open(QS,"qsub -l $PARAMS $JOB_SCRIPT -v arg1=/"$at/",arg2=/"^$fam.$dol/" 2>/dev/null |");
     my $pid = open( QS, "$submit |" );
     my $t   = localtime;
     my $qs  = <QS>;
@@ -463,6 +467,11 @@ while (1) {
 }    # loop until all tasks done
 $t = localtime;
 print "$t all blasts done\n";
-my $rc = system("$OID_HOME/bin/orthologid.pl -B");
+if (! $ENV_WRAPPER eq "") {
+    my $rc = system("$OID_HOME/bin/orthologid.pl -B"); #$ENV_WRAPPER 
+}
+else {
+    my $rc = system("$OID_HOME/bin/orthologid.pl -B");
+}
 $t = localtime;
 print "$t ran ortholodid -B rc $rc\n";

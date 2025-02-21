@@ -24,9 +24,9 @@
 
 runtreejob () {
 if [[ $HPC -eq "S" ]]; then
-	sbatch --mem=8GB --time=12:00:00 --wrap="tnt 'p oid.proc;zzz'"
+	sbatch --mem=8GB --time=12:00:00 --wrap="$ENV_WRAPPER tnt 'p oid.proc;zzz'"
 else
-	echo "tnt 'p oid.proc;zzz'" | qsub -l mem=8GB,walltime=12:00:00 -N wrap
+	echo "$ENV_WRAPPER tnt 'p oid.proc;zzz'" | qsub -l mem=8GB,walltime=12:00:00 -N wrap
 fi
 }
 
@@ -55,7 +55,7 @@ if [[ $TREEPROG -eq "TNT" ]]; then
 			while [ ! -f ${FAMILYDIR}oid.tre ]; do
 				SLACKVAL=$(($(grep "Increase slack" ${FAMILYDIR}oid.log|tail -n1|cut -d" " -f6)+10))
 				sed -i "s/slack [0-9]*/slack ${SLACKVAL}/g" ${FAMILYDIR}oid.proc
-				tnt 'silent=console;silent=buffer;p oid.proc;zzz' &> $OID_USER_DIR/log/treefix.log
+				$ENV_WRAPPER tnt 'silent=console;silent=buffer;p oid.proc;zzz' &> $OID_USER_DIR/log/treefix.log
 				echo ""
 			done
 			echo "built tree for ${FAMILYDIR}"
@@ -77,7 +77,7 @@ if [[ $TREEPROG -eq "TNT" ]]; then
 				echo $FAMILYDIR $LOG
 			else
 				echo "re-attempting tree for ${FAMILYDIR}" > $OID_USER_DIR/log/treefix.log
-				tnt 'silent=console;silent=buffer;p oid.proc;zzz' &> $OID_USER_DIR/log/treefix.log
+				$ENV_WRAPPER tnt 'silent=console;silent=buffer;p oid.proc;zzz' &> $OID_USER_DIR/log/treefix.log
 				echo ""
 				if [ ! -f ${FAMILYDIR}oid.tre ]; then
 					echo "Rebuild for ${FAMILYDIR} failed: skipping for orthology"

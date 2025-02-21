@@ -45,7 +45,7 @@ main() {
 		# cp ${prefix}.rat $TESTDATA/${prefix}.rat
 #tree fusion with tnt; skip nodes <5-polytomy?
 		bash $OID_HOME/bin/make_tfproc.sh $rtFamily ${prefix}.rat $out
-		tnt p $out/oblong_treefuse.proc
+		$ENV_WRAPPER tnt p $out/oblong_treefuse.proc
 		cp oid.tre $out/oid.tre
 		echo .$fam.fam.done >> $OID_DATADIR/.fam.done
 #approx. tree fusion with oblong

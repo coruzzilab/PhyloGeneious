@@ -24,8 +24,6 @@
 # Author: Ernest K Lee <elee@amnh.org>
 #
 # mod to run blastp+ by chuck zegar 10/2/2015
-# My PBS queue
-PBSQ="cgsb-s"
 
 # Memory size of higher memory node needed for running mcl
 HIMEM="12GB"
@@ -137,9 +135,7 @@ cat <<EOF >$JOB_SCRIPT
 #PBS -S /bin/bash
 #PBS -j oe
 #PBS -l mem=$HIMEM
-##PBS -o /scratch/cmz209/orthotnt/oidTest9/log/job/
 #PBS -o log/job/
-#PBS -q $PBSQ
 #PBS -N $OID_RUN
 #PBS -V
 
@@ -148,7 +144,7 @@ PATH=$OID_BIN:$PATH
 cd \$OID_USER_DIR
 date
 time
-orthologid.pl "\$arg1" "\$arg2"
+orthologid.pl "\$arg1" "\$arg2" #\$ENV_WRAPPER 
 
 date
 time
@@ -163,9 +159,9 @@ chmod a+x $JOB_SCRIPT
 # All-all BLAST
 if [[ ! -s $OID_USER_DIR/blast/blastres.blst ]]; then
 	cp $OID_USER_DIR/blastdb/combined.fa $OID_USER_DIR/blast
-	$OID_HOME/bin/new_blast_parts.pl #make partn.faa (pgm estimates size
+	$OID_HOME/bin/new_blast_parts.pl #make partn.faa (pgm estimates size #$ENV_WRAPPER 
 	#        NPART = $(/bina/ls OID_USER_DIR/blast/*.* | grep -c ".faa")
-	$OID_HOME/bin/qsblast.pl -g 16 -n 12 -w 12 -q $MAXQS
+	$OID_HOME/bin/qsblast.pl -g 16 -n 12 -w 12 -q $MAXQS #$ENV_WRAPPER 
 	#	for i in "${INGROUP[@]}" "${OUTGROUP[@]}" ; do
 	##		print "Submitting job for $i-against-all BLAST..."
 	#		qsub -l nodes=1:ppn=$NCPU,walltime=8:00:00 $JOB_SCRIPT -v arg1="-b",arg2="$i"
@@ -186,7 +182,7 @@ if [[ ! -s $OID_USER_DIR/blast/blastres.blst ]]; then
 
 	#	print "Merging BLAST data ..."
 	#	$OID_BIN/orthologid.pl -B
-	if ! [[ -f $OID_USER_DIR/blast/blastres.blst && -f $OID_USER_DIR/blast/genelen.blst ]]; then
+	if ! [[ -s $OID_USER_DIR/blast/blastres.blst && -s $OID_USER_DIR/blast/genelen.blst ]]; then
 		print -u2 "Error: failed to generate BLAST results database"
 		exit 1
 	else
@@ -204,7 +200,7 @@ if ! /bin/ls -d $OID_USER_DIR/data/[1-9] >/dev/null 2>&1; then
 	print "Creating families ..."
 	#	if [[ -f $OID_USER_DIR/blast/clusters ]]; then
 	# Clustering done, just create family directories
-	$OID_HOME/bin/orthologid.pl -f
+	$OID_HOME/bin/orthologid.pl -f #$ENV_WRAPPER 
 	#	else
 	#		JOBID=$(qsub -l nodes=1:ppn=$NCPU,walltime=12:00:00 $JOB_SCRIPT -v arg1="-f" | grep '^[0-9]')
 	#		# Wait for clustering to finish
@@ -223,11 +219,11 @@ else
 fi
 print "running new job select"
 ## new job to grep all data subdir for Family size
-$OID_HOME/bin/rdfamdb.pl
+$OID_HOME/bin/rdfamdb.pl #$ENV_WRAPPER 
 #
 rm log/job/schedone
 while [[ ! -f log/job/schedone ]]; do
-	$OID_HOME/bin/orthologid.pl -s 'hello'
+	$OID_HOME/bin/orthologid.pl -s 'hello' #$ENV_WRAPPER 
 	if [[ ! -f log/job/schedone ]]; then
 		print "orthologid.pl -s aborted before finish"
 		date
@@ -237,13 +233,13 @@ date
 time
 # Extract orthologs
 print "Extracting orthologs ..."
-$OID_BIN/orthologid.pl -O
+$OID_BIN/orthologid.pl -O #$ENV_WRAPPER 
 date
 time
 
 # Generate big matrix
 print 'Generating matrix ...'
-$OID_BIN/orth2matrix.pl
+$OID_BIN/orth2matrix.pl #$ENV_WRAPPER 
 
 date
 time
@@ -253,8 +249,8 @@ echo "Tree search ..."
 if [[ -f jac.tre ]]; then
 	echo "Tree file already exists"
 else
-	tnt bground p $OID_HOME/PostProcessing/mpt.proc
-	tnt bground p $OID_HOME/PostProcessing/jac.proc
+	$ENV_WRAPPER tnt bground p $OID_HOME/PostProcessing/mpt.proc
+	$ENV_WRAPPER tnt bground p $OID_HOME/PostProcessing/jac.proc
 fi
 while sleep 300; do
 	#	if [[ ! -f Jacknife.tre ]]; then
@@ -268,9 +264,9 @@ date
 time
 
 echo "Processing trees..."
-python $OID_HOME/PostProcessing/fix_tree.py mpt.tre mpt_fixed.tre
-python $OID_HOME/PostProcessing/fix_tree.py mpt.nel mpt_nel_fixed.tre
-python $OID_HOME/PostProcessing/fix_tree.py jac.tre jac_fixed.tre
+$ENV_WRAPPER python $OID_HOME/PostProcessing/fix_tree.py mpt.tre mpt_fixed.tre
+$ENV_WRAPPER python $OID_HOME/PostProcessing/fix_tree.py mpt.nel mpt_nel_fixed.tre
+$ENV_WRAPPER python $OID_HOME/PostProcessing/fix_tree.py jac.tre jac_fixed.tre
 
 echo "Pipeline complete!"
 date

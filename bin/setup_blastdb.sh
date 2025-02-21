@@ -124,16 +124,16 @@ for i in "$@"; do
     	    echo "Creating ${i%%.*} BLAST db"
 	    cat $fasta_file >>$Combined
 	#     $FORMATDB -n $i -i $fasta_file -o T
-	    makeblastdb -dbtype 'prot' -in $fasta_file -title $i -out $i -parse_seqids
+	    $ENV_WRAPPER makeblastdb -dbtype 'prot' -in $fasta_file -title $i -out $i -parse_seqids
 	elif [[ $SEARCHTYPE -eq 'D' ]]; then
             echo "Creating ${i%%.*} DIAMOND db"
 	    cat $fasta_file >>$Combined
-	    diamond makedb --in $fasta_file --db $i
+	    $ENV_WRAPPER diamond makedb --in $fasta_file --db $i
 	elif [[ $SEARCHTYPE -eq 'M' ]]; then
     	    echo "Creating ${i%%.*} MMseqs2 db"
 	    cat $fasta_file >>$Combined
-	    mmseqs createdb $fasta_file $i.DB --dbtype 1
-	    mmseqs/bin/mmseqs createindex $i.DB tmp
+	    $ENV_WRAPPER mmseqs createdb $fasta_file $i.DB --dbtype 1
+	    $ENV_WRAPPER mmseqs/bin/mmseqs createindex $i.DB tmp
 	# elif [[ $SEARCHTYPE -eq 'K' ]]; then
     	#     echo "Creating ${i%%.*} kaamer db"
 	#     cat $fasta_file >>$Combined

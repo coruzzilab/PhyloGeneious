@@ -19,8 +19,8 @@ PATH=$OID_BIN:$PATH
 
 echo "in run_test.sh $arg1"
 #source activate $SOFT
-#srun -n 1 -c 4  -l -o log/job/%J.out ${OID_WRAPPER} $OID_HOME/bin/mk_blast_parts.pl $arg1&
-$OID_HOME/bin/mk_blast_partq.pl $arg1
+#srun -n 1 -c 4  -l -o log/job/%J.out $OID_HOME/bin/mk_blast_parts.pl $arg1&
+$OID_HOME/bin/mk_blast_partq.pl $arg1 #${ENV_WRAPPER} 
 echo hello from run_test.sh $arg1
 echo slurm job \$SLURM_LOCALID
 echo cpus \$SLURM_CPUS_PER_TASK
@@ -35,19 +35,19 @@ cat <<EOF >$JOB_SCRIPTB
 #SBATCH -o log/job/%J.out
 
 echo \$SLURM_JOBID has \$SLURM_CPUS_PER_TASK cpus
-$OID_HOME/bin/run_blastq.pl \$1 \$2
+$OID_HOME/bin/run_blastq.pl \$1 \$2 #${ENV_WRAPPER} 
 
 EOF
 chmod a+x $JOB_SCRIPTB
 #echo "$JOB_SCRIPT has $NCPU"
-#            qsub -l nodes=1:ppn=$arg2 ${OID_WRAPPER} $JOB_SCRIPT;
+#            qsub -l nodes=1:ppn=$arg2 $JOB_SCRIPT;
 #$JOB_SCRIPT
 #module rm  perl
 #source  deactivate
 if [[ ! -d $OID_USER_DIR/log/job ]]; then
 	mkdir -p $OID_USER_DIR/log/job
 fi
-sbatch -N 1 -c $arg2 --mem $arg3 -t 04:00:00 -o log/job/%J.out ${OID_WRAPPER} $JOB_SCRIPT &
+sbatch -N 1 -c $arg2 --mem $arg3 -t 04:00:00 -o log/job/%J.out $JOB_SCRIPT &
 sleep 2
 #for JOBID in `jobs -p`;do
 #echo srun starts as $JOBID

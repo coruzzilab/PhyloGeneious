@@ -2,7 +2,6 @@
 use strict;
 my $OID_HOME;
 my $OID_USER_DIR;
-my $OID_WRAPPER;
 
 BEGIN {
     $OID_HOME = $ENV{'OID_HOME'};
@@ -11,7 +10,6 @@ BEGIN {
     $OID_USER_DIR = $ENV{'OID_USER_DIR'};
     die "Environment variable OID_USER_DIR is not defined ... exiting.\n"
       if !defined($OID_USER_DIR);
-    $OID_WRAPPER = $ENV{'OID_WRAPPER'};
 }
 
 use lib "$OID_HOME/lib";
@@ -26,13 +24,13 @@ print FO "export HPC=$HPC\n";
 print FO "if [[ ! -d toplog ]]; then mkdir toplog; fi\n";
 
 if ( $HPC =~ /S/ ) {
-    print FO "sbatch -o toplog/%J.out \$@ $OID_WRAPPER $OID_HOME/bin/pipe.slu\n";
+    print FO "sbatch -o toplog/%J.out \$@ $OID_HOME/bin/pipe.slu\n";
 }
 elsif ( $HPC =~ /P/ ) {
-    print FO "qsub \$@ $OID_WRAPPER $OID_HOME/bin/pipe.pbs\n";
+    print FO "qsub \$@ $OID_HOME/bin/pipe.pbs\n";
 }
 else {
-    print FO "qsub \$@ $OID_WRAPPER $OID_HOME/bin/pipe.pbs\n";
+    print FO "qsub \$@ $OID_HOME/bin/pipe.pbs\n";
 }
 print "created pipe.sh\n";
 close FO;

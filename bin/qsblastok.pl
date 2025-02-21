@@ -11,6 +11,7 @@ my $NCPU;    # cpu's to give blast
 my $gb;      #gb to run blast
 my $MYUSER;
 my $myjob;
+my $ENV_WRAPPER;
 
 BEGIN {
     $OID_HOME = $ENV{'OID_HOME'};
@@ -21,6 +22,10 @@ BEGIN {
       if !defined($OID_USER_DIR);
     $OID_BLAST = "$OID_USER_DIR/blast";
     $MYUSER    = `whoami`;
+    $ENV_WRAPPER  = $ENV{'ENV_WRAPPER'};
+    if (!defined($ENV_WRAPPER)){
+        $ENV_WRAPPER = "";
+    }
 }
 
 use lib "$OID_HOME/lib";
@@ -88,7 +93,7 @@ sub fmthpc {
         foreach my $arg (@args) {
             $argstr .= " $arg";
         }
-        my $submit = q/sbatch / . "${OID_WRAPPER} $PARAMS $script $argstr";
+        my $submit = q/sbatch / . "$PARAMS $script $argstr";
         return $submit;
     }
     else {    #HPC = 'P' or undefined
@@ -494,6 +499,11 @@ while (1) {
 }    # loop until all tasks done
 $t = localtime;
 print "$t all blasts done\n";
-my $rc = system("$OID_HOME/bin/orthologid.pl -B");
+if (! $ENV_WRAPPER eq "") {
+    my $rc = system("$OID_HOME/bin/orthologid.pl -B"); #$ENV_WRAPPER 
+}
+else {
+    my $rc = system("$OID_HOME/bin/orthologid.pl -B");
+}
 $t = localtime;
 print "$t ran ortholodid -B rc $rc\n";

@@ -7,7 +7,10 @@ kk=$2
 # k=0
 iter=1
 
-oblong_exe=/home/$USER/oblong/oblong
+if [[ ${ENV_WRAPPER} != "" ]]; then
+    oblong_exe="$ENV_WRAPPER oblong"
+else
+    oblong_exe=$OID_HOME/oblong
 
 
 le_5000 () {

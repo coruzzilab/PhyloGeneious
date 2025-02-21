@@ -10,9 +10,7 @@ cat <<EOF >$JOB_SCRIPT
 #PBS -S /bin/bash
 #PBS -j oe
 #PBS -l mem=\$HIMEM
-##PBS -o /scratch/cmz209/orthotnt/oidTest9/log/job/
 #PBS -o log/job/
-#PBS -q $PBSQ
 #PBS -N $OID_RUN
 #PBS -V
 
@@ -24,7 +22,7 @@ date +%s >\$MYSTART
 echo orthologid.pl "\$arg1" "\$arg2" >>\$MYSTART
 date
 time
-$OID_HOME/bin/orthologid.pl "\$arg1" "\$arg2"
+$OID_HOME/bin/orthologid.pl "\$arg1" "\$arg2" #$ENV_WRAPPER 
 
 date
 time

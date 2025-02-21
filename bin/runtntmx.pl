@@ -14,9 +14,14 @@ my $nthr   = 2;
 my $curthr = 0;
 my $tm;
 my $savDir = getcwd;
+my $ENV_WRAPPER;
 $tm = localtime;
 print "runtnt in $savDir at $tm\n";
 print "runtntmx in $savDir\n";
+$ENV_WRAPPER  = $ENV{'ENV_WRAPPER'};
+if (!defined($ENV_WRAPPER)){
+    $ENV_WRAPPER = "";
+}
 
 #    chdir "1";
 die "runtntmx.pl nproc nthreads prefix\n" if ( @ARGV < 3 );
@@ -51,8 +56,14 @@ foreach my $tnt (@tntcmd) {
 
     $tm = localtime;
     print "$tm starting $tnt\n";
-    my $status = system("tnt p $tnt 0</dev/null 1>&0 2>&0");
-    print "tnt with $tnt exit $status\n";
+    if (! $ENV_WRAPPER eq "") {
+        my $status = system("$ENV_WRAPPER tnt p $tnt 0</dev/null 1>&0 2>&0");
+        print "tnt with $tnt exit $status\n";
+    }
+    else {
+        my $status = system("tnt p $tnt 0</dev/null 1>&0 2>&0");
+        print "tnt with $tnt exit $status\n";
+    }
     exit;
 }
 1 while ( wait() != -1 );
@@ -75,9 +86,15 @@ my $one = '1';
 my $tnt = "$tntstr$one.proc";
 $tm = localtime;
 print "$tm starting $tnt\n";
-my $status = system("tnt p $tnt 0</dev/null 1>&0 2>&0");
-$tm = localtime;
-print "$tm tnt with $tnt exit $status\n";
+if (! $ENV_WRAPPER eq "") {
+    my $status = system("$ENV_WRAPPER tnt p $tnt 0</dev/null 1>&0 2>&0");
+    $tm = localtime;
+    print "$tm tnt with $tnt exit $status\n";
+else {
+    my $status = system("tnt p $tnt 0</dev/null 1>&0 2>&0");
+    $tm = localtime;
+    print "$tm tnt with $tnt exit $status\n";
+}
 
 my $lsv = `ls -l $tntstr*.tre`;
 print "ls value $lsv\n";

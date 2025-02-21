@@ -11,6 +11,7 @@ my $OID_BLASTDB;
 my $OID_BLASTDIR;
 my $OID_DATADIR;
 my $HPC;
+my $ENV_WRAPPER;
 
 BEGIN {
     $OID_HOME = $ENV{'OID_HOME'};
@@ -24,6 +25,10 @@ BEGIN {
     $OID_BLASTDIR = "$OID_USER_DIR/blast";
     $OID_BLASTDB  = "$OID_USER_DIR/blastdb";
     $OID_DATADIR  = "$OID_USER_DIR/data";
+    $ENV_WRAPPER  = $ENV{'ENV_WRAPPER'};
+    if (!defined($ENV_WRAPPER)){
+        $ENV_WRAPPER = "";
+    }
 }
 
 use lib "$OID_HOME/lib";
@@ -66,8 +71,14 @@ if ( !-f $clusterdone ) {    #must run mci
         "-use-tab", $tabFile,           "-o", $clustersFile
     );
     push( @mclArgs, "-te", $nthr );
-    my $status = system( $mcl_exe, @mclArgs );
-    die "$mcl_exe exit status = $?" unless $status == 0;
+    if (! $ENV_WRAPPER eq "") {
+        my $status = system($ENV_WRAPPER, $mcl_exe, @mclArgs);
+        die "$mcl_exe exit status = $?" unless $status == 0;
+    }
+    else {
+        my $status = system( $mcl_exe, @mclArgs );
+        die "$mcl_exe exit status = $?" unless $status == 0;
+    }
     $tm = localtime;
     print "$tm mcl done.\n";
     open( XX, ">$clusterdone" );    #create a done file

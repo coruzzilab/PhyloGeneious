@@ -400,9 +400,7 @@ sub code {
 
             #$matrix->[$k][0] = $line[0];
             my $seq = uc( join( '', @line[ 1 .. $#line ] ) );
-            $seq =~ tr/\*X/\?\?/;    # Replace * and X (stop codons) with ?
-	    $seq =~ tr/B/D/;    # Replace B (D or N) with D (most common)
-	    $seq =~ tr/Z/E/;    # Replace Z (E or Q) with E (most common)
+            $seq =~ tr/\*XBZJ/\?\?\?\?\?/;    # Replace * and X (stop codons) and ambiguous with ?
             $seq =~ tr/ACDEFGHIKLMNOPQRSTUVWY\?\-//cd
               ;    #Allow only AA letters or ? or - in alignment
             my @aa = split( //, $seq );

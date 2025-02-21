@@ -9,11 +9,7 @@
 #PBS -o log/job
 #PBS -l mem=12GB
 #PBS -l nodes=1:ppn=1,walltime=48:00:00
-##PBS -o /scratch/cmz209/orthotnt/oidTest8/log/job
-#PBS -q cgsb-s
 #PBS -N runmclfam
-##PBS -M cmz209@nyu.edu
-##PBS -m abe
 
 echo hello for runmclfam
 cd $OID_USER_DIR
@@ -22,4 +18,4 @@ MYSTART=.$PBS_JOBID.start
 date +%s >$MYSTART
 echo runmclfam.pl >>$MYSTART
 
-$OID_HOME/bin/runmclfam.pl "$arg1"
+$OID_HOME/bin/runmclfam.pl "$arg1" #$ENV_WRAPPER 
