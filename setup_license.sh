@@ -13,14 +13,14 @@ NOTNT="You have not agreed to all the terms of the license, or
 
 OID_HOME=`pwd`
 sed -i "s|OID_HOME|${OID_HOME}|" setup_rundir.sh
-sed -i "s|\(OID_HOME=\).*|\1${OID_HOME}|" testdata/setoid.sh
+sed -i "s|\(OID_HOME=\).*|\1${OID_HOME}|" testdata/run.sh
 
 echo "Starting PhyloGeneious setup..."
-if [ ! -f $OID_HOME/.tntagreed ]; then
+if [ ! -f $OID_HOME/.passwordfile.tnt ]; then
 	echo "You are about to go to the TNT license agreement. Please follow the instructions on the screen and enter 'zzz' when you are finished."
 	echo "Press enter on the keyboard when you are ready to begin."
 	read -p EMPTY
-	while [ ! -f $OID_HOME/.tntagreed ]; do
+	while [ ! -f $OID_HOME/.passwordfile.tnt ]; do
 #		/tnt-linux/TNT-bin/tnt 2>/terminalErr
 #		cat /terminalErr | grep -q "Error opening terminal"
 #		if [ $? == 0 ]; then 
@@ -215,13 +215,13 @@ Do you agree to all the terms and conditions?"
 				elif [ "${RESPONSE//[[:space:]]/}" == "IAGREE" ]; then
 					i=10
 					#cp $OID_HOME/.passwordfile.tnt /root
-					touch $OID_HOME/.tntagreed
+					echo palosgomias > $OID_HOME/.passwordfile.tnt
 				else
 					echo "Type 'I agree' to finish (or 'n' to decline)"
 				fi
 			done
 #		fi
-		if [ ! -f $OID_HOME/.tntagreed ]; then
+		if [ ! -f $OID_HOME/.passwordfile.tnt ]; then
 			echo "TNT license agreement failed. Would you like to try again?"
 			echo "(enter 'y' to re-try, or press anything to continue)"
 			read RESPONSE

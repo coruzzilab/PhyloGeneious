@@ -1,7 +1,7 @@
 #!/bin/sh
 
 FORCE=1
-ALIAS="OIDrun"
+ALIAS="PGrun"
 FILEDIR=""
 PATHTOA=`pwd`
 IMAGE=0
@@ -40,15 +40,21 @@ while getopts 'a:d:s:o:fh-:' opt; do
           IMAGE=2
           image_path="$OPTVALUE"
           if [[ $image_path -eq "" ]]; then echo "Error: Image name/path not specified"; exit 1; fi
+          if [[ "${image_path::1}" != "/" ]]; then
+            image_path="$PATHTOA/$image_path"
+          fi
+          if [[ "${image_path: -1}" == "/" ]]; then
+            image_path=${image_path::-1}
+          fi
       esac
       ;;
 
     ?|h)
       echo
-      echo "$(basename $0) -d PATH/TO/SEQUENCE_FILES [-a RUN_DIR_ALIAS -s SPECIESFILE -o OUTGROUP -f]"
+      echo "$(basename $0) -d PATH/TO/SEQUENCE_FILES [-a RUN_DIR_ALIAS -s SPECIESFILE -o OUTGROUP -f --docker IMAGE_NAME --singularity PATH/TO/IMAGE]"
       echo
-      echo "A script for auto-building an OrthologID run directory."
-      echo -e "-d\tPath to directory containing sequence files \n-a\tName to give run directory [default: OIDrun]\n-s\tTab-delimited file where first column contains the species \n\tidentifiers used in the sequence files and second column contains the \n\tspecies names\n-o\tList of outgroup species identifiers [ie. \"Species1 Species2 Species3\"]\n-f\tForce overwrite of run directory\n-h\tDisplay help\n"
+      echo "A script for auto-building a PhyloGeneious run directory."
+      echo -e "-d\tPath to directory containing sequence files \n-a\tName to give run directory [default: PGrun]\n-s\tTab-delimited file where first column contains the species \n\tidentifiers used in the sequence files and second column contains the \n\tspecies names\n-o\tList of outgroup species identifiers [ie. \"Species1 Species2 Species3\"]\n-f\tForce overwrite of run directory\n--docker\tUse provided docker image as run enviroment\n--singularity\tUse provided singularity image as run enviroment\n-h\tDisplay help\n"
       echo "Note: Sequence IDs should contain the species identifier (eg. >SpeciesID#GeneID) and sequence files names should only contain the species identifier (eg. SpeciesID.faa)"
       exit 1
       ;;
@@ -105,10 +111,10 @@ else
 fi
 
 #ln -s $PATHTOA/$FILEDIR $ALIAS/blastdb
-cp OID_HOME/testdata/config $ALIAS #need to generalize home directory
-cp OID_HOME/testdata/setoid.sh $ALIAS
-cp OID_HOME/testdata/procfiles.txt $ALIAS
-sed -i "s|\(OID_USER_DIR=\).*|\1${PATHTOA}/$ALIAS|" $ALIAS/setoid.sh
+cp /home/vms351/vast_link/PhyloGeneious/testdata/config $ALIAS #need to generalize home directory
+cp /home/vms351/vast_link/PhyloGeneious/testdata/run.sh $ALIAS
+cp /home/vms351/vast_link/PhyloGeneious/testdata/procfiles.txt $ALIAS
+sed -i "s|\(OID_USER_DIR=\).*|\1${PATHTOA}/$ALIAS|" $ALIAS/run.sh
 sed -i "s/\(INGROUP=\).*/\1/" $ALIAS/config
 sed -i "s/\(OUTGROUP=\).*/\1/" $ALIAS/config
 
@@ -116,20 +122,23 @@ image_setup_error () { echo  "Failed to set up environment container for pipelin
 
 if [[ $IMAGE -gt 0 ]]; then
     if [[ $IMAGE -eq 1 ]]; then #docker
-        cp OID_HOME/docker.bash $ALIAS
+        cp /home/vms351/vast_link/PhyloGeneious/docker.bash $ALIAS
         docker_path=$(which docker)
         if [[ $? -gt 0 ]]; then echo "Error: Docker not found on system."; image_setup_error; break; fi
         sed -i "s|RUNDIR|${PATHTOA}/$ALIAS|" $ALIAS/docker.bash
         sed -i "s|DOCKER|${docker_path}|" $ALIAS/docker.bash
         sed -i "s|phylogeneious:latest|${image_path}|" $ALIAS/docker.bash
+        sed -i "s|\(ENV_WRAPPER=\).*|\1$ALIAS/docker.bash|" $ALIAS/run.sh
     fi
     if [[ $IMAGE -eq 2 ]]; then #singularity
-        cp OID_HOME/singularity.bash $ALIAS
+        cp /home/vms351/vast_link/PhyloGeneious/singularity.bash $ALIAS
         singularity_path=$(which singularity)
         if [[ $? -gt 0 ]]; then echo "Error: Singularity not found on system."; image_setup_error; break; fi
         sed -i "s|RUNDIR|${PATHTOA}/$ALIAS|" $ALIAS/singularity.bash
         sed -i "s|SINGULARITY|${docker_path}|" $ALIAS/singularity.bash
-        sed -i "s|IMAGEPATH|${image_path}|" $ALIAS/singularity.bash    fi
+        sed -i "s|IMAGEPATH|${image_path}|" $ALIAS/singularity.bash
+        sed -i "s|\(ENV_WRAPPER=\).*|\1$ALIAS/singularity.bash|" $ALIAS/run.sh
+    fi
 fi
 
 unspec_species_error () { echo "Species identifiers not specified. Please adjust $ALIAS/config before running OrthologID."; }
