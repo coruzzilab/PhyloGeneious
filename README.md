@@ -3,7 +3,7 @@
 
 PhyloGeneious is an improved version of the OrthologID pipeline, optimized for HPC clusters (Slurm and PBS job schedulers).
 
-![Pipeline](Pipeline_steps.png)
+![Pipeline](pipeline.png)
 
 By using this pipeline, you also agree to the [TNT Personal Use License](https://www.lillo.org.ar/phylogeny/tnt/files/LicenseAgreement_1.5.htm).
 
@@ -52,10 +52,12 @@ or build the project folder manually. This folder should contain the following:
    - `TNTA`= Lowest family size to be pooled in a group job running TNT. `default=200`
    - `TNTB`= Family size requiring a stand-alone process to run TNT. `default=500`
    - `BLSTMIN`= Number of minutes for an average BLAST job to run. `default=60`
+   - `SEARCHTYPE`= Program to use for sequence similarity search. B=BLASTP `default`, D=DIAMOND, M=mmseqs2
+   - `TREEPROGRAM`= Program to use for gene tree building. TNT=TNT (protein-based) `default`, OBLONG=Oblong+TNT (codon-based) `in beta, SLURM only`
 
 3. procfiles.txt - The set of TNT commands for searching the gene family trees (copy from distribution).
 4. species.txt - a two column tab-delimited table of species short labels (e.g Athal) and species full names (e.g. Arabidopsis thaliana).
-5. setoid.sh - a shell script to set the `OID_HOME` and `OID_USER_DIR` environment variables to indicate the paths to the PhyloGeneious folder (code) and to your project working directory, respectively (required before initiating a run):
+5. run.sh - a shell script to set the `OID_HOME` and `OID_USER_DIR` environment variables to indicate the paths to the PhyloGeneious folder (code) and to your project working directory, respectively (required before initiating a run):
 ```sh
 export OID_HOME=/path/to/PhyloGeneious/folder
 export OID_USER_DIR=/path/to/project/folder
