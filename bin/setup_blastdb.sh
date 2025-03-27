@@ -139,4 +139,22 @@ for i in "$@"; do
 	#     cat $fasta_file >>$Combined
 	#     go/bin/kaamer-db -make -f faa -i $fasta_file -d $i
 	fi
+
+ 	# Check if BLAST DB successful
+	if [[ $SEARCHTYPE -eq 'B' ]]; then
+            if [[ ! -s $i.psq ]]; then
+		echo -u2 "Unknown BLAST db error occured - failed to create database for $i"
+		exit 1
+	    fi
+	elif [[ $SEARCHTYPE -eq 'D' ]]; then
+    	    if [[ ! -s $i.dmnd ]]; then
+	        echo -u2 "Unknown DIAMOND db error occured - failed to create database for $i"
+		exit 1
+	    fi
+	elif [[ $SEARCHTYPE -eq 'M' ]]; then
+            if [[ ! -s $i.DB ]]; then
+	        echo -u2 "Unknown MMseqs2 db error occured - failed to create database for $i"
+		exit 1
+	    fi
+	fi
 done
