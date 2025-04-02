@@ -94,11 +94,42 @@ while (<MFH>) {
 # we read in entire set of genes into memory - why use blastcmd
 my $genect = 0;
 my $filect = 0;
-for my $faa (<$OID_BLASTDB/*.faa>) {
+#get search db type
+if ( ! defined($SEARCHTYPE) ) {
+    open CONF_FH, "$OID_CONF" or die "Cannot open $OID_CONF: $!\n";
+    while (<CONF_FH>) {
+        chomp;
+        next if (/^#/);
+        if (/^\s*SEARCHTYPE\s*=\s*([BDM]).*$/) {   # search method
+            $SEARCHTYPE = $1;
+        }
+    }
+    close CONF_FH;
+    $SEARCHTYPE  = 'B' if !defined($SEARCHTYPE);
+}
+my $dbtype = ".psq";
+if ( $SEARCHTYPE =~ /D/ ) { $dbtype = ".dmnd";}
+if ( $SEARCHTYPE =~ /M/ ) { $dbtype = ".DB";}
 
-    # i don't trust combined.fa -
+for my $spname (<$OID_BLASTDB/*$dbtype>) {
+    #don't trust combined.fa -
+    $spname =~ s/$dbtype//;
     my $geneid;
     $filect++;
+    my $faa;
+    if ( -f "$spname.faa" ) { 
+        $faa = "$spname.faa";
+    } elsif ( -f "$spname.fa" ) { 
+        $faa = "$spname.fa";
+    } elsif ( -f "$spname.pep" ) { 
+        $faa = "$spname.pep";
+    } elsif ( -f "$spname.fasta" ) { 
+        $faa = "$spname.fasta";
+    } elsif ( -f "$spname.seq" ) { 
+        $faa = "$spname.seq";
+    } else {
+        die "protein file not found for $spname"
+    }
     open FA, $faa or print "cannot open $faa ";
     while (<FA>) {
         if (/^>(\S+)/) {
