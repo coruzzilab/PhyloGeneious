@@ -1,5 +1,7 @@
 # PhyloGeneious
- High Performance Computing optimized orthology inference.
+[Click here for the latest version! -> 2025 update](https://github.com/coruzzilab/PhyloGeneious/tree/2025_update) 
+
+High Performance Computing optimized orthology inference.
 
 PhyloGeneious is an improved version of the OrthologID pipeline, optimized for HPC clusters (Works on Slurm and PBS job schedulers).
 
