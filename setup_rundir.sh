@@ -113,9 +113,17 @@ else
     fi
     echo "$NUMFASTA sequence files found."
     mkdir $ALIAS/blastdb
-    for FILE in `ls $FILEDIR | grep ".seq$\|.fa$\|.faa$\|.fasta$\|.pep"`; do
-        ln -s $FILEDIR/$FILE $ALIAS/blastdb/$FILE
-    done
+    if [[ -f $SPECIESFILE ]]; then
+        echo "Only using species in species files."
+        for ID in `awk -F"\t" '{print $1}' $SPECIESFILE`; do
+            for FILE in `ls $FILEDIR | grep "^${ID}\." | grep ".seq$\|.fa$\|.faa$\|.fasta$\|.pep"`; do
+                ln -s $FILEDIR/$FILE $ALIAS/blastdb/$FILE
+        done
+    else
+        for FILE in `ls $FILEDIR | grep ".seq$\|.fa$\|.faa$\|.fasta$\|.pep"`; do
+            ln -s $FILEDIR/$FILE $ALIAS/blastdb/$FILE
+        done
+    fi
     #check sequence files for invalid characters
     COUNT=`grep -c '[^A-Za-z0-9#._>\*]\|-' $ALIAS/blastdb/* | awk -F":" '{sum+=$2;} END{print sum;}'`
     if [[ $COUNT -gt 0 ]]; then

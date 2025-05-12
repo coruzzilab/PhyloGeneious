@@ -12,6 +12,8 @@ my $OID_BLASTDIR;
 my $OID_DATADIR;
 my $HPC;
 my $ENV_WRAPPER;
+my $SEARCHTYPE;
+my $OID_CONF;
 
 BEGIN {
     $OID_HOME = $ENV{'OID_HOME'};
@@ -25,6 +27,8 @@ BEGIN {
     $OID_BLASTDIR = "$OID_USER_DIR/blast";
     $OID_BLASTDB  = "$OID_USER_DIR/blastdb";
     $OID_DATADIR  = "$OID_USER_DIR/data";
+    $OID_CONF = "$OID_USER_DIR/config";
+    $SEARCHTYPE = $ENV{'SEARCHTYPE'};
     $ENV_WRAPPER  = $ENV{'ENV_WRAPPER'};
     if (!defined($ENV_WRAPPER)){
         $ENV_WRAPPER = "";

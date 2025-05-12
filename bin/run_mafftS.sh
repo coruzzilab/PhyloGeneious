@@ -1,5 +1,6 @@
 #!/bin/bash
 #
+#SBATCH -o log/job/mafft.%J.out
 
 cd $OID_USER_DIR
 date

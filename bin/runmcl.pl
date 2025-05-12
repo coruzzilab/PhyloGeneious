@@ -116,7 +116,7 @@ sub startqs {    #starts a qsub
     if ($qs) {
         chomp $qs;
         $qs = fixqs($qs);
-        print "start qsid $qs for blastid $blid\n";
+        print "start qsid $qs for clustid $blid\n";
 
         #        if ($qs !~ /^\d+$/){
         #            my @stf = split /\s/,$qs;

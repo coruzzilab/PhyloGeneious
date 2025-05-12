@@ -563,7 +563,7 @@ sub allBlast {
            #            tie (%geneLen, "AnyDBM_File", $geneLenDB,O_WRONLY|O_CREAT,0666)
            #                or die "Cannot open $geneLenDB: $!\n";
            # this part creates geneLenDB - ok don't change
-            open FH, "$OID_COMB"   or die "cannot open combdb.fa\n";
+            open FH, "$OID_COMB"   or die "cannot open combined.fa\n";
             open FA, ">$geneLenDB" or die "cannot open genelendb $geneLenDB\n";
             my $geneid = "";
             my $genSeq = "";
@@ -1128,6 +1128,7 @@ sub make1fam {    # makes a single family
     my $clust     = shift;
     my $pfasta    = shift;
     my $familyDir;
+    my $status;
 
 #    my $FASTACMD = defined($BLAST_HOME) ? "$BLAST_HOME/bin/fastacmd" : "fastacmd";
     my $FASTACMD = "blastdbcmd";
@@ -1159,6 +1160,7 @@ sub make1fam {    # makes a single family
 
     }
     close FFH;
+    $status = system("$OID_HOME/bin/fix_familyfastas.sh $familyDir/$unalignedFamily");
     open( XX, ">>$OID_DATADIR/.fam.done" );    #add to done file
         print XX ".$familyNum.fam.done\n";
     close XX;

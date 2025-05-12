@@ -54,4 +54,4 @@ makeFamily()              if $opt_f;
 alignFamily( $ARGV[0] )   if $opt_a;
 makeTree( $ARGV[0] )      if $opt_t;
 findOrthologs( $ARGV[0] ) if $opt_O;
-schedatqs( $ARGV[0] )     if $opt_s;
+schedatqs( $ARGV[0] )     if $opt_s; #make trees for all families

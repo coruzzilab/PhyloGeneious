@@ -29,7 +29,6 @@
 # Memory size of higher memory node needed for running mcl
 HIMEM="128GB"
 ##export OID_USER_DIR=`pwd`
-##export OID_HOME=/home/cmz209/orthotnt/OID_nw3
 if [[ -z $MY_SHELL ]]; then
 	echo "MY_SHELL not defined - won't restart properly"
 	export MY_SHELL=$0
@@ -37,9 +36,6 @@ if [[ -z $MY_SHELL ]]; then
 fi
 echo "will restart $MY_SHELL"
 date +%s >starttime
-#module load mercurial/intel/2.1.2
-#module load mcl/intel/12-068
-#module load mafft/intel/6.864
 
 # Check environment variables and user directory
 #if ! env | grep -q "^OID_HOME="; then
@@ -96,7 +92,7 @@ OUTGROUP=($(grep OUTGROUP $CONFIG | cut -f2 -d=))
 #set -a OUTGROUP $(grep OUTGROUP $CONFIG | cut -f2 -d=)
 HPC=$(sed -n 's/^HPC *= *\([PSG]*\).*/\1/p' $CONFIG)
 if [[ -z $HPC ]]; then
-	HPC=P
+	HPC=S
 fi
 echo "proc set hpc to $HPC"
 NCPU=$(sed -n 's/^NCPU *= *\([0-9]*\).*/\1/p' $CONFIG)
@@ -147,14 +143,13 @@ if [[ $SLURM_JOB_ID ]]; then
 	echo proc job $SLURM_JOB_ID
 	echo proc cpu $SLURM_CPUS_PER_TASK
 	echo proc ntask $SLURM_NTASKS
-	export SOFT=$SCRATCH/software/bigplant
 fi
 if [[ ! -s $OID_USER_DIR/blast/blastres.blst ]]; then
 	cp $OID_USER_DIR/blastdb/combined.fa $OID_USER_DIR/blast
-	#        source activate $SOFT
-	#        module load perl
+
 	$OID_HOME/bin/new_blast_parts.pl #make partn.faa (pgm estimates size #$ENV_WRAPPER 
 	#        NPART = $(/bina/ls OID_USER_DIR/blast/*.* | grep -c ".faa")
+	touch $OID_USER_DIR/blast/.Parts.done
 	$OID_HOME/bin/qsblast.pl -g 16 -n 12 -w 12 -q $MAXQS #$ENV_WRAPPER 
 	#fi
 	#echo 'proc finished'
@@ -163,8 +158,12 @@ if [[ ! -s $OID_USER_DIR/blast/blastres.blst ]]; then
 		exit 1
 	else
 		echo "Archiving part files..."
-		tar -czf $OID_USER_DIR/blast/Parts.tar.gz $OID_USER_DIR/blast/Part[0-9]* --remove-files
-		tar -czf $OID_USER_DIR/blast/speciesParts.tar.gz $OID_USER_DIR/blast/[A-z]*Part[0-9]* --remove-files
+		E=0; while [[ $E -lt 1 ]]; do
+			tar -czf $OID_USER_DIR/blast/Parts.tar.gz $OID_USER_DIR/blast/Part[0-9]* --remove-files;
+			tar -czf $OID_USER_DIR/blast/speciesParts.tar.gz $OID_USER_DIR/blast/[A-z]*Part[0-9]* --remove-files;
+			echo "Archiving complete!";
+			E=1;
+		done &
 	fi
 else
 	echo "All-aginst-all BLAST results exist ... skipping"
@@ -175,10 +174,11 @@ time
 #if ! /bin/ls -d $OID_USER_DIR/data/[1-9] >/dev/null 2>&1; then
 if [[ ! -f $OID_USER_DIR/data/.family.done ]]; then
 	echo "Creating families ..."
-	#	if [[ -f $OID_USER_DIR/blast/clusters ]]; then
+	if [[ -f $OID_USER_DIR/blast/clusters ]]; then
 	# Clustering done, just create family directories
-	#		$OID_HOME/bin/orthologid.pl -f
-	$OID_HOME/bin/runmcl.pl $HIMEM 20 # $MY_MEM 20 #$ENV_WRAPPER 
+		$OID_HOME/bin/orthologid.pl -f
+	else
+		$OID_HOME/bin/runmcl.pl $HIMEM 20 # $MY_MEM 20 #$ENV_WRAPPER 
 	#	else
 	#		JOBID=$(qsub -l nodes=1:ppn=$NCPU,walltime=12:00:00 $JOB_SCRIPT -v arg1="-f" | grep '^[0-9]')
 	#		# Wait for clustering to finish
@@ -187,7 +187,7 @@ if [[ ! -f $OID_USER_DIR/data/.family.done ]]; then
 	#				break
 	#			fi
 	#		done
-	#	fi
+	fi
 	if [[ $? -ne 0 ]]; then
 		echo "Family clustering failed!"
 		exit 1
@@ -199,8 +199,11 @@ echo "running new job select"
 ## new job to grep all data subdir for Family size
 $OID_HOME/bin/rdfamdb.pl #$ENV_WRAPPER 
 echo "Archiving small clusters..."
-tar -xzf $OID_USER_DIR/data/small_clusters.tar.gz $OID_USER_DIR/data/S[1-9]* --remove-files
-#
+E=0; while [[ $E -lt 1 ]]; do
+	tar -xzf $OID_USER_DIR/data/small_clusters.tar.gz $OID_USER_DIR/data/S[1-9]* --remove-files
+	echo "Archiving complete!";
+	E=1;
+done &
 rm log/job/schedone
 while [[ ! -f log/job/schedone ]]; do
 	$OID_HOME/bin/orthologid.pl -s 'hello' #$ENV_WRAPPER 
@@ -236,32 +239,42 @@ $OID_BIN/orth2matrix.pl #$ENV_WRAPPER
 date
 time
 
+if [[ ! -f Matrix.tnt ]]; then
+	echo "Matrix construction failed!"
+	exit 1
+fi
+
 # Run tree searches
 echo "Tree search ..."
-if [[ -f jac.tre ]]; then
-	echo "Tree file already exists"
+NPOS=`grep -A1 "xread" Matrix.tnt | tail -n1|cut -d" " -f1`
+if [[ $NPOS -gt 1000000 ]]; then
+	echo "Matrix too large for automatic species tree search. Please run manually."
 else
-	$ENV_WRAPPER tnt bground p $OID_HOME/PostProcessing/mpt.proc
-	$ENV_WRAPPER tnt bground p $OID_HOME/PostProcessing/jac.proc
-fi
-while sleep 300; do
-	#	if [[ ! -f Jacknife.tre ]]; then
-	if [[ ! -f jac.tre ]]; then
-		continue
+	if [[ -f jac.tre ]]; then
+		echo "Tree file already exists"
+	else
+		$ENV_WRAPPER tnt bground p $OID_HOME/PostProcessing/mpt.proc
+		$ENV_WRAPPER tnt bground p $OID_HOME/PostProcessing/jac.proc
 	fi
-	break
-done
-# Calculate PBS values
-#echo "Calculating PBS values ..."
-#$OID_BIN/pbs_split_slurm.pl
+	while sleep 300; do
+		#	if [[ ! -f Jacknife.tre ]]; then
+		if [[ ! -f jac.tre ]]; then
+			continue
+		fi
+		break
+	done
+	# Calculate PBS values
+	#echo "Calculating PBS values ..."
+	#$OID_BIN/pbs_split_slurm.pl
 
-date
-time
+	date
+	time
 
-echo "Processing trees..."
-$ENV_WRAPPER python $OID_HOME/PostProcessing/fix_tree.py mpt.tre mpt_fixed.tre
-$ENV_WRAPPER python $OID_HOME/PostProcessing/fix_tree.py mpt.nel mpt_nel_fixed.tre
-$ENV_WRAPPER python $OID_HOME/PostProcessing/fix_tree.py jac.tre jac_fixed.tre
+	echo "Processing trees..."
+	$ENV_WRAPPER python $OID_HOME/PostProcessing/fix_tree.py mpt.tre mpt_fixed.tre
+	$ENV_WRAPPER python $OID_HOME/PostProcessing/fix_tree.py mpt.nel mpt_nel_fixed.tre
+	$ENV_WRAPPER python $OID_HOME/PostProcessing/fix_tree.py jac.tre jac_fixed.tre
+fi
 
 echo "Pipeline complete!"
 date
