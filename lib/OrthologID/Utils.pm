@@ -314,7 +314,7 @@ sub genSuperMatrix {
         my %curr;
         my $searchkey = (%seqs)[0];
         use List::MoreUtils 'first_index';
-        my $ogindex = first_index { /$searchkey/i } @$annoRef;
+        my $ogindex = first_index { /$searchkey( |$)/i } @$annoRef;
         my @annokeys = split " ", (split /\|/, $$annoRef[$ogindex])[2];
         foreach my $name (@annokeys) {#while (my ($name, $seq) = each %seqs) {
             my $seq = $seqs{$name};
