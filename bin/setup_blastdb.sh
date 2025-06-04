@@ -24,16 +24,16 @@
 # $Id: setup_blastdb.sh 91 2009-03-02 06:24:06Z ernie $
 #
 
-if [[ $SEARCHTYPE -eq 'B' ]]; then
+if [[ $SEARCHTYPE == 'B' ]]; then
     echo "setup_blast+"
-elif [[ $SEARCHTYPE -eq 'D' ]]; then
+elif [[ $SEARCHTYPE == 'D' ]]; then
     echo "setup_diamond"
-elif [[ $SEARCHTYPE -eq 'M' ]]; then
+elif [[ $SEARCHTYPE == 'M' ]]; then
     echo "setup mmseqs2"
-# elif [[ $SEARCHTYPE -eq 'K' ]]; then
+# elif [[ $SEARCHTYPE == 'K' ]]; then
 #     echo "setup kaamer"
 else
-    echo "search method not recognized. please use blastp, diamond, or mmseqs2."
+    echo "search method ${SEARCHTYPE} not recognized. please use blastp, diamond, or mmseqs2."
     exit 1
 fi
 if [[ $OID_HOME == "" ]]; then
@@ -69,17 +69,17 @@ for i in "$@"; do
 	echo $i
 
 	# Check if BLAST DB exists
-	if [[ $SEARCHTYPE -eq 'B' ]]; then
+	if [[ $SEARCHTYPE == 'B' ]]; then
             if [[ -s $i.psq ]]; then
 		echo "BLAST db file for $i already exists ... skipping"
 		continue
 	    fi
-	elif [[ $SEARCHTYPE -eq 'D' ]]; then
+	elif [[ $SEARCHTYPE == 'D' ]]; then
     	    if [[ -s $i.dmnd ]]; then
 	        echo "DIAMOND db file for $i already exists ... skipping"
 		continue
 	    fi
-	elif [[ $SEARCHTYPE -eq 'M' ]]; then
+	elif [[ $SEARCHTYPE == 'M' ]]; then
             if [[ -s $i.DB ]]; then
 	        echo "MMseqs2 db file for $i already exists ... skipping"
 		continue
@@ -120,38 +120,38 @@ for i in "$@"; do
        fi
 
 	# Create BLAST DB (assuming protein sequences)
-	if [[ $SEARCHTYPE -eq 'B' ]]; then
+	if [[ $SEARCHTYPE == 'B' ]]; then
     	    echo "Creating ${i%%.*} BLAST db"
 	    cat $fasta_file >>$Combined
 	#     $FORMATDB -n $i -i $fasta_file -o T
 	    $ENV_WRAPPER makeblastdb -dbtype 'prot' -in $fasta_file -title $i -out $i -parse_seqids
-	elif [[ $SEARCHTYPE -eq 'D' ]]; then
+	elif [[ $SEARCHTYPE == 'D' ]]; then
             echo "Creating ${i%%.*} DIAMOND db"
 	    cat $fasta_file >>$Combined
 	    $ENV_WRAPPER diamond makedb --in $fasta_file --db $i
-	elif [[ $SEARCHTYPE -eq 'M' ]]; then
+	elif [[ $SEARCHTYPE == 'M' ]]; then
     	    echo "Creating ${i%%.*} MMseqs2 db"
 	    cat $fasta_file >>$Combined
 	    $ENV_WRAPPER mmseqs createdb $fasta_file $i.DB --dbtype 1
 	    $ENV_WRAPPER mmseqs/bin/mmseqs createindex $i.DB tmp
-	# elif [[ $SEARCHTYPE -eq 'K' ]]; then
+	# elif [[ $SEARCHTYPE == 'K' ]]; then
     	#     echo "Creating ${i%%.*} kaamer db"
 	#     cat $fasta_file >>$Combined
 	#     go/bin/kaamer-db -make -f faa -i $fasta_file -d $i
 	fi
 
  	# Check if BLAST DB successful
-	if [[ $SEARCHTYPE -eq 'B' ]]; then
+	if [[ $SEARCHTYPE == 'B' ]]; then
             if [[ ! -s $i.psq ]]; then
 		echo -u2 "Unknown BLAST db error occured - failed to create database for $i"
 		exit 1
 	    fi
-	elif [[ $SEARCHTYPE -eq 'D' ]]; then
+	elif [[ $SEARCHTYPE == 'D' ]]; then
     	    if [[ ! -s $i.dmnd ]]; then
 	        echo -u2 "Unknown DIAMOND db error occured - failed to create database for $i"
 		exit 1
 	    fi
-	elif [[ $SEARCHTYPE -eq 'M' ]]; then
+	elif [[ $SEARCHTYPE == 'M' ]]; then
             if [[ ! -s $i.DB ]]; then
 	        echo -u2 "Unknown MMseqs2 db error occured - failed to create database for $i"
 		exit 1

@@ -103,6 +103,11 @@ MAXQS=$(sed -n 's/^MAXQS *= *\([0-9]*\).*/\1/p' $CONFIG)
 if [[ -z $MAXQS ]]; then
 	MAXQS=1
 fi
+SEARCHTYPE=$(sed -n 's/^SEARCHTYPE *= *\([BDM]*\).*/\1/p' $CONFIG)
+if [[ -z $SEARCHTYPE ]]; then
+	SEARCHTYPE='B'
+fi
+export SEARCHTYPE
 date
 time
 # Setup BLAST database
