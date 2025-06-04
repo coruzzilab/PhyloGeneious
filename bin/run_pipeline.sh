@@ -179,7 +179,7 @@ time
 #if ! /bin/ls -d $OID_USER_DIR/data/[1-9] >/dev/null 2>&1; then
 if [[ ! -f $OID_USER_DIR/data/.family.done ]]; then
 	echo "Creating families ..."
-	if [[ -f $OID_USER_DIR/blast/clusters ]]; then
+	if [[ -s $OID_USER_DIR/blast/clusters ]]; then
 	# Clustering done, just create family directories
 		$OID_HOME/bin/orthologid.pl -f
 	else
@@ -255,7 +255,7 @@ NPOS=`grep -A1 "xread" Matrix.tnt | tail -n1|cut -d" " -f1`
 if [[ $NPOS -gt 1000000 ]]; then
 	echo "Matrix too large for automatic species tree search. Please run manually."
 else
-	if [[ -f jac.tre ]]; then
+	if [[ -s jac.tre ]]; then
 		echo "Tree file already exists"
 	else
 		$ENV_WRAPPER tnt bground p $OID_HOME/PostProcessing/mpt.proc
@@ -263,7 +263,7 @@ else
 	fi
 	while sleep 300; do
 		#	if [[ ! -f Jacknife.tre ]]; then
-		if [[ ! -f jac.tre ]]; then
+		if [[ ! -s jac.tre ]]; then
 			continue
 		fi
 		break

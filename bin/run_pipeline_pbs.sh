@@ -203,9 +203,11 @@ time
 # Create gene families
 if ! /bin/ls -d $OID_USER_DIR/data/[1-9] >/dev/null 2>&1; then
 	print "Creating families ..."
-	#	if [[ -f $OID_USER_DIR/blast/clusters ]]; then
+	if [[ -s $OID_USER_DIR/blast/clusters ]]; then
 	# Clustering done, just create family directories
-	$OID_HOME/bin/orthologid.pl -f #$ENV_WRAPPER 
+		$OID_HOME/bin/orthologid.pl -f #$ENV_WRAPPER 
+	else
+		$OID_HOME/bin/runmcl.pl $HIMEM 20 # $MY_MEM 20 #$ENV_WRAPPER 
 	#	else
 	#		JOBID=$(qsub -l nodes=1:ppn=$NCPU,walltime=12:00:00 $JOB_SCRIPT -v arg1="-f" | grep '^[0-9]')
 	#		# Wait for clustering to finish
@@ -215,6 +217,7 @@ if ! /bin/ls -d $OID_USER_DIR/data/[1-9] >/dev/null 2>&1; then
 	#			fi
 	#		done
 	#	fi
+	fi
 	if [[ $? -ne 0 ]]; then
 		print -u2 "Family clustering failed!"
 		exit 1
@@ -251,7 +254,7 @@ time
 
 # Run tree searches
 echo "Tree search ..."
-if [[ -f jac.tre ]]; then
+if [[ -s jac.tre ]]; then
 	echo "Tree file already exists"
 else
 	$ENV_WRAPPER tnt bground p $OID_HOME/PostProcessing/mpt.proc
@@ -259,7 +262,7 @@ else
 fi
 while sleep 300; do
 	#	if [[ ! -f Jacknife.tre ]]; then
-	if [[ ! -f jac.tre ]]; then
+	if [[ ! -s jac.tre ]]; then
 		continue
 	fi
 	break
