@@ -80,7 +80,7 @@ rtFamily=$OID_DATADIR/$fam/$family_aligned
 work=$(mktemp -t -d tmp-${fam}XXXX)
 cd ${work}
 
-# if [[ ${family_type[$fam]} -eq 2 ]]; then
+# if [[ ${family_type[$fam]} == 2 ]]; then
 le_1500
 # fi
 

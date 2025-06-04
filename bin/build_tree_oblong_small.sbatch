@@ -102,10 +102,10 @@ do
 		if [[ $(grep -c ">" $FILE) -lt 4 ]];
 		then
 			echo "skipping fam $fam too few taxa $(grep -c ">" $FILE)";
-		elif [[ ${family_type[$fam]} -eq 0 ]]; 
+		elif [[ ${family_type[$fam]} == 0 ]]; 
 		then
 			le_20
-		elif [[ ${family_type[$fam]} -eq 1 ]];
+		elif [[ ${family_type[$fam]} == 1 ]];
 		then
 			le_500
 		fi

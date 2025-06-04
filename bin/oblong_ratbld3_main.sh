@@ -31,9 +31,9 @@ main() {
 				continue
 			else
 				LEN=`cat $out/${prefix}${i}.rat | wc -l`
-				if [[ i -eq 0 ]]; then #first set
+				if [[ i == 0 ]]; then #first set
 					head -n$((LEN-x)) $out/${prefix}${i}.rat | sed "s/);/)\*/g" > ${prefix}.rat #x y is ?
-				elif [[ i -eq $((ntimes - 1)) ]]; then #last set
+				elif [[ i == $((ntimes - 1)) ]]; then #last set
 					tail -n$((LEN-y)) $out/${prefix}${i}.rat >> ${prefix}.rat
 				else #middle sets
 					head -n$((LEN-x)) $out/${prefix}${i}.rat | tail -n$((LEN-x-y)) | sed "s/);/)\*/g" >> ${prefix}.rat

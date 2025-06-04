@@ -25,7 +25,7 @@ fi
 for fam in "${families[@]}"
 do
   #fam=${families[$i]}
-  # if [[ ${family_type[$fam]} -eq 6 ]]; then
+  # if [[ ${family_type[$fam]} == 6 ]]; then
   main
   # fi
 done

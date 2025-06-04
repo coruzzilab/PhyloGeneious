@@ -25,9 +25,9 @@ main() {
 				continue
 			else
 				LEN=`cat $out/${prefix}${i}.rat | wc -l`
-				if [[ i -eq 0 ]]; then #first set
+				if [[ i == 0 ]]; then #first set
 					head -n$((LEN-x)) $out/${prefix}${i}.rat | sed "s/);/)\*/g" > ${prefix}.rat #x y is ?
-				elif [[ i -eq $((ntimes - 1)) ]]; then #last set
+				elif [[ i == $((ntimes - 1)) ]]; then #last set
 					tail -n$((LEN-y)) $out/${prefix}${i}.rat >> ${prefix}.rat
 				else #middle sets
 					head -n$((LEN-x)) $out/${prefix}${i}.rat | tail -n$((LEN-x-y)) | sed "s/);/)\*/g" >> ${prefix}.rat
@@ -87,7 +87,7 @@ rtFamily=$OID_DATADIR/$fam/$family_aligned
 work=$(mktemp -t -d tmp-${fam}XXX)
 cd ${work}
 
-# if [[ ${family_type[$fam]} -eq 2 ]]; then
+# if [[ ${family_type[$fam]} == 2 ]]; then
 main
 # fi
 

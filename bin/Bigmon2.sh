@@ -33,7 +33,7 @@ arrayqs () {
     lastarray=$(($3 - 1))
     args=$4
     
-    if [[ $HPC -eq "S" ]]; then
+    if [[ $HPC == "S" ]]; then
         sbatch --array=0-$lastarray -o $LOGS/$outlog $script $args
     else
         qsub -t 0-$lastarray -o $LOGS/mafft_logs/%J.out $script $args
@@ -41,7 +41,7 @@ arrayqs () {
 }
 
 getjobs () {
-    if [[ $HPC -eq "S" ]]; then
+    if [[ $HPC == "S" ]]; then
         squeue -u $USER | tail -n +2 
     else
         qstat -e -u $MYUSER #check USER variable

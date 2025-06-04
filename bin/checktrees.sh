@@ -23,7 +23,7 @@
 # Author: Veronica M. Sondervan
 
 runtreejob () {
-if [[ $HPC -eq "S" ]]; then
+if [[ $HPC == "S" ]]; then
 	sbatch --mem=8GB --time=12:00:00 --wrap="$ENV_WRAPPER tnt 'p oid.proc;zzz'"
 else
 	echo "$ENV_WRAPPER tnt 'p oid.proc;zzz'" | qsub -l mem=8GB,walltime=12:00:00 -N wrap
@@ -31,7 +31,7 @@ fi
 }
 
 checkqueue () {
-if [[ $HPC -eq "S" ]]; then
+if [[ $HPC == "S" ]]; then
 	squeue -u $USER | grep -c wrap
 else
 	qstat -u $MYUSER | grep -c wrap
@@ -45,7 +45,7 @@ if [[ -z $TREEPROG ]]; then
 	TREEPROG="TNT"
 fi
 
-if [[ $TREEPROG -eq "TNT" ]]; then
+if [[ $TREEPROG == "TNT" ]]; then
 	for FAMILYDIR in `comm -23 <(ls $OID_USER_DIR/data/*/FAMILY | grep -v "S" | sed "s/FAMILY//g"| sort) <(ls $OID_USER_DIR/data/*/oid.tre | grep -v "S" | sed "s/oid.tre//g" | sort)`; do #get fams with missing trees
 		if [[ $(grep "Increase slack" ${FAMILYDIR}*log | tail -n1|wc -c) -gt 0 ]]; then
 			echo "re-attempting tree for ${FAMILYDIR}"

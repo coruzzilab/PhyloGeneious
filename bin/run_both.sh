@@ -61,10 +61,10 @@ fi
 OID_BIN=$OID_HOME/bin
 echo "oidbin $OID_BIN"
 
-#if [[ $# -eq 0 ]] && ! env | grep -q "^OID_USER_DIR="; then
+#if [[ $# == 0 ]] && ! env | grep -q "^OID_USER_DIR="; then
 #	echo  "Must specify run directory as argument or define OID_USER_DIR"
 #	exit 1
-#elif [[ $# -eq 1 ]]; then
+#elif [[ $# == 1 ]]; then
 #	export OID_USER_DIR="$1"
 #elif [[ $# -gt 1 ]]; then
 #	echo  "Usage: $0 [ OID_USER_DIR ]"
@@ -181,7 +181,7 @@ if ! /bin/ls -d $OID_USER_DIR/data/[1-9] >/dev/null 2>&1; then
 	#		JOBID=$(qsub -l nodes=1:ppn=$NCPU,walltime=12:00:00 $JOB_SCRIPT -v arg1="-f" | grep '^[0-9]')
 	#		# Wait for clustering to finish
 	#		while sleep 60; do
-	#			if [[ $(qstat $JOBID 2>/dev/null | grep -c $JOBID) -eq 0 ]]; then
+	#			if [[ $(qstat $JOBID 2>/dev/null | grep -c $JOBID) == 0 ]]; then
 	#				break
 	#			fi
 	#		done
