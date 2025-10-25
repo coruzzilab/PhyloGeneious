@@ -216,6 +216,7 @@ Do you agree to all the terms and conditions?"
 					i=10
 					#cp $OID_HOME/.passwordfile.tnt /root
 					echo palosgomias > $OID_HOME/.passwordfile.tnt
+					echo palosgomias > $HOME/.passwordfile.tnt
 				else
 					echo "Type 'I agree' to finish (or 'n' to decline)"
 				fi

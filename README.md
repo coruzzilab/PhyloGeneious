@@ -44,6 +44,7 @@ or
 ```sh
 singularity pull phylogeneious.sif docker://vsondervan/phylogeneious
 ```
+If you wish to use local program installations, add any module load statements or PATH modifications to testdata/run.sh for easiest use.
 
 ## Run setup:
 
@@ -101,7 +102,10 @@ Once you have set all the above, including the environment variables, run the fo
 ### Test run:
 To do a test run of the pipeline, copy the provided testdata directory to your desired location or run the following command:
 ```sh
-<path/to/PhyloGeneious>/setup_rundir.sh -d <path/to/PhyloGeneious>/blastdb -s <path/to/PhyloGeneious>/testdata/testspecies.txt -o EcoliK12MG1655
+OID_HOME=<path/to/PhyloGeneious>
+$OID_HOME/setup_rundir.sh -d $OID_HOME/testdata/blastdb -s $OID_HOME/testdata/testspecies.txt -o EcoliK12MG1655
+cd PGrun
+./run.sh
 #docker or singularity flags can be added following the setup instructions above
 ```
 Exact run time will vary depending on resource availability, but a successful test run should complete in less than three hours.

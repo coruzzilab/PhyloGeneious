@@ -1,6 +1,6 @@
 #!/bin/bash
-if [ ! -f $OID_HOME/.tntagreed ]; then
-echo "ERROR: PhyloGeneious not set up"
+if [ ! -f $OID_HOME/.passwordtnt || -f $HOME/.passwordtnt ]; then
+echo "ERROR: PhyloGeneious not set up: TNT license missing"
 echo "Please run the setup_license.sh script in the pipeline installation directory before proceeding"
 exit 1
 fi
