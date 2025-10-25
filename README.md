@@ -103,10 +103,9 @@ Once you have set all the above, including the environment variables, run the fo
 To do a test run of the pipeline, copy the provided testdata directory to your desired location or run the following command:
 ```sh
 OID_HOME=<path/to/PhyloGeneious>
-$OID_HOME/setup_rundir.sh -d $OID_HOME/testdata/blastdb -s $OID_HOME/testdata/testspecies.txt -o EcoliK12MG1655
+$OID_HOME/setup_rundir.sh -d $OID_HOME/testdata/blastdb -s $OID_HOME/testdata/testspecies.txt -o EcoliK12MG1655 #docker or singularity flags can be added following the setup instructions above
 cd PGrun
 ./run.sh
-#docker or singularity flags can be added following the setup instructions above
 ```
 Exact run time will vary depending on resource availability, but a successful test run should complete in less than three hours.
 
