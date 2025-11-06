@@ -113,11 +113,13 @@ else
     fi
     echo "$NUMFASTA sequence files found."
     mkdir $ALIAS/blastdb
+    echo "Creating links to input files..."
     if [[ -f $SPECIESFILE ]]; then
-        echo "Only using species in species files."
+        echo "Only using species in the provided species file."
         for ID in `awk -F"\t" '{print $1}' $SPECIESFILE`; do
             for FILE in `ls $FILEDIR | grep "^${ID}\." | grep ".seq$\|.fa$\|.faa$\|.fasta$\|.pep"`; do
                 ln -s $FILEDIR/$FILE $ALIAS/blastdb/$FILE
+	    done
         done
     else
         for FILE in `ls $FILEDIR | grep ".seq$\|.fa$\|.faa$\|.fasta$\|.pep"`; do
@@ -125,17 +127,43 @@ else
         done
     fi
     #check sequence files for invalid characters
-    COUNT=`grep -c '[^A-Za-z0-9#._>\*]\|-' $ALIAS/blastdb/* | awk -F":" '{sum+=$2;} END{print sum;}'`
-    if [[ $COUNT -gt 0 ]]; then
-        echo "Invalid characters found in the following sequence files: please fix before running."
-        grep -c '[^A-Za-z0-9#._>\*]\|-' $ALIAS/blastdb/* | awk -F":" '$2>0'
+    echo "Checking fasta files for errors..."
+    for FILE in $ALIAS/blastdb/*; do
+        grep '>' $FILE |awk '{print $1}'|sort|uniq -d >> filecheck.temp
+    done
+    if [[ $(cat filecheck.temp|wc -l) -gt 0 ]]; then
+        echo "Error: Duplicate sequence IDs found in the following files:"
+        cat filecheck.temp | sed "s|$ALIAS/blastdb/||" | cut -d":" -f1 | uniq -c | awk '{print $2": "$1" duplicates"}'
+        echo "All sequences must have unique IDs. Please fix before running PhyloGeneious."
+    else echo "No duplicate IDs found."
     fi
+    grep -c ">[^#]*$" $ALIAS/blastdb/* | awk -F':' '$2>0' | sed "s|$ALIAS/blastdb/||" > filecheck.temp
+    if [[ $(cat filecheck.temp|wc -l) -gt 0 ]]; then
+        echo "Error: Species identifiers missing from sequence IDs in the following files: please fix before running PhyloGeneious"
+        cat filecheck.temp | cut -d":" -f1 
+    fi
+    grep -c "\*." $ALIAS/blastdb/* | sed "s|$ALIAS/blastdb/||" > filecheck.temp
+    COUNT=`cat filecheck.temp | awk -F":" '{sum+=$2;} END{print sum;}'`
+    if [[ $COUNT -gt 0 ]]; then
+        echo "Warning: internal stop codons found in the following sequence files:"
+        cat filecheck.temp | awk -F":" '$2>0 {print $1}'
+    fi
+    grep -c '[^A-Za-z0-9#._>\*]\|-' $ALIAS/blastdb/* | sed "s|$ALIAS/blastdb/||" > filecheck.temp
+    COUNT=`cat filecheck.temp | awk -F":" '{sum+=$2;} END{print sum;}'`
+    if [[ $COUNT -gt 0 ]]; then
+        echo "Error: Invalid characters found in the following $(awk -F':' '$2>0' filecheck.temp|wc -l) sequence files: please fix before running."
+        cat filecheck.temp | awk -F":" '$2>0 {print $1": "$2" lines"}'
+        echo "Sequence IDs may only contain letters, numbers, '.', and '_' characters."
+    fi
+    rm filecheck.temp
+    echo "Check done!"
 fi
 
 #ln -s $PATHTOA/$FILEDIR $ALIAS/blastdb
-cp OID_HOME/testdata/config $ALIAS #need to generalize home directory
-cp OID_HOME/testdata/run.sh $ALIAS
-cp OID_HOME/testdata/procfiles.txt $ALIAS
+echo "Building configuration files..."
+cp /home/veson/PhyloGeneious/testdata/config $ALIAS #need to generalize home directory
+cp /home/veson/PhyloGeneious/testdata/run.sh $ALIAS
+cp /home/veson/PhyloGeneious/testdata/procfiles.txt $ALIAS
 sed -i "s|\(OID_USER_DIR=\).*|\1${PATHTOA}/$ALIAS|" $ALIAS/run.sh
 sed -i "s/\(INGROUP=\).*/\1/" $ALIAS/config
 sed -i "s/\(OUTGROUP=\).*/\1/" $ALIAS/config
@@ -163,7 +191,17 @@ if [[ ${#SPECIESFILE} -ne 0 && ${#OUTGROUP} -ne 0 ]]; then
 elif [[ ${#SPECIESFILE} -eq 0 && ${#OUTGROUP} -eq 0 ]]; then
     unspec_species_error
 else
-    echo "Error: Species file and outgroup identifiers must be specified together. Setup incomplete."
+    echo "Warning: no species file provided with outgroup identifier; additional species identifiers will be inferred from input file names."
+    TEMP=`echo $OUTGROUP | sed "s/ /\\\\\\|/g"`
+    INGROUP=`ls $ALIAS/blastdb | grep -v "${TEMP}" | rev |cut -d"." -f2-|rev|sort -u|tr "\n" " "`
+    echo $INGROUP | grep -q '[^A-Za-z0-9#._ ]\|-'
+    if [[ $? -eq 0 ]]; then
+        echo "Error: Illegal characters in species identifiers."
+        echo "Only letter, digits, ., and _ are allowed."
+    else
+        sed -i "s/\(INGROUP=\).*/\1$INGROUP/" $ALIAS/config
+        sed -i "s/\(OUTGROUP=\).*/\1$OUTGROUP/" $ALIAS/config
+    fi
     unspec_species_error
 fi
 
@@ -172,7 +210,7 @@ image_setup_error () { echo  "Failed to set up environment container for pipelin
 if [[ $IMAGE -gt 0 ]]; then
     echo Using image $image_path
     if [[ $IMAGE -eq 1 ]]; then #docker
-        cp OID_HOME/docker.bash $ALIAS
+        cp /home/veson/PhyloGeneious/docker.bash $ALIAS
         sed -i "s|RUNDIR|${PATHTOA}/$ALIAS|" $ALIAS/docker.bash
         docker_path=$(which docker)
         if [[ $? -gt 0 ]]; then echo "Error: Docker not found on system."; image_setup_error; exit 1; fi
@@ -181,7 +219,7 @@ if [[ $IMAGE -gt 0 ]]; then
         sed -i "s|\(ENV_WRAPPER=\).*|\1${PATHTOA}/$ALIAS/docker.bash|" $ALIAS/run.sh
     fi
     if [[ $IMAGE -eq 2 ]]; then #singularity
-        cp OID_HOME/singularity.bash $ALIAS
+        cp /home/veson/PhyloGeneious/singularity.bash $ALIAS
         sed -i "s|RUNDIR|${PATHTOA}/$ALIAS|" $ALIAS/singularity.bash
         singularity_path=$(which singularity)
         if [[ $? -gt 0 ]]; then echo "Error: Singularity not found on system."; image_setup_error; exit 1; fi
