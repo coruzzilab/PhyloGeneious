@@ -161,9 +161,9 @@ fi
 
 #ln -s $PATHTOA/$FILEDIR $ALIAS/blastdb
 echo "Building configuration files..."
-cp /home/veson/PhyloGeneious/testdata/config $ALIAS #need to generalize home directory
-cp /home/veson/PhyloGeneious/testdata/run.sh $ALIAS
-cp /home/veson/PhyloGeneious/testdata/procfiles.txt $ALIAS
+cp OID_HOME/testdata/config $ALIAS #need to generalize home directory
+cp OID_HOME/testdata/run.sh $ALIAS
+cp OID_HOME/testdata/procfiles.txt $ALIAS
 sed -i "s|\(OID_USER_DIR=\).*|\1${PATHTOA}/$ALIAS|" $ALIAS/run.sh
 sed -i "s/\(INGROUP=\).*/\1/" $ALIAS/config
 sed -i "s/\(OUTGROUP=\).*/\1/" $ALIAS/config
@@ -210,7 +210,7 @@ image_setup_error () { echo  "Failed to set up environment container for pipelin
 if [[ $IMAGE -gt 0 ]]; then
     echo Using image $image_path
     if [[ $IMAGE -eq 1 ]]; then #docker
-        cp /home/veson/PhyloGeneious/docker.bash $ALIAS
+        cp OID_HOME/docker.bash $ALIAS
         sed -i "s|RUNDIR|${PATHTOA}/$ALIAS|" $ALIAS/docker.bash
         docker_path=$(which docker)
         if [[ $? -gt 0 ]]; then echo "Error: Docker not found on system."; image_setup_error; exit 1; fi
@@ -219,7 +219,7 @@ if [[ $IMAGE -gt 0 ]]; then
         sed -i "s|\(ENV_WRAPPER=\).*|\1${PATHTOA}/$ALIAS/docker.bash|" $ALIAS/run.sh
     fi
     if [[ $IMAGE -eq 2 ]]; then #singularity
-        cp /home/veson/PhyloGeneious/singularity.bash $ALIAS
+        cp OID_HOME/singularity.bash $ALIAS
         sed -i "s|RUNDIR|${PATHTOA}/$ALIAS|" $ALIAS/singularity.bash
         singularity_path=$(which singularity)
         if [[ $? -gt 0 ]]; then echo "Error: Singularity not found on system."; image_setup_error; exit 1; fi
