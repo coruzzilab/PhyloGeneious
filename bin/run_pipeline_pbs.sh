@@ -166,7 +166,7 @@ if [[ ! -s $OID_USER_DIR/blast/blastres.blst ]]; then
 	cp $OID_USER_DIR/blastdb/combined.fa $OID_USER_DIR/blast
 	$OID_HOME/bin/new_blast_parts.pl #make partn.faa (pgm estimates size #$ENV_WRAPPER 
 	#        NPART = $(/bina/ls OID_USER_DIR/blast/*.* | grep -c ".faa")
-	$OID_HOME/bin/qsblast.pl -g 16 -n 12 -w 12 -q $MAXQS #$ENV_WRAPPER 
+	$OID_HOME/bin/qsblast.pl -g 4 -n 12 -w 12 -q $MAXQS #$ENV_WRAPPER #-g 16
 	#	for i in "${INGROUP[@]}" "${OUTGROUP[@]}" ; do
 	##		print "Submitting job for $i-against-all BLAST..."
 	#		qsub -l nodes=1:ppn=$NCPU,walltime=8:00:00 $JOB_SCRIPT -v arg1="-b",arg2="$i"

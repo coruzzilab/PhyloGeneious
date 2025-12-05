@@ -90,7 +90,7 @@ if (! $ENV_WRAPPER eq "") {
     my $status = system("$ENV_WRAPPER tnt p $tnt 0</dev/null 1>&0 2>&0");
     $tm = localtime;
     print "$tm tnt with $tnt exit $status\n";
-else {
+}else {
     my $status = system("tnt p $tnt 0</dev/null 1>&0 2>&0");
     $tm = localtime;
     print "$tm tnt with $tnt exit $status\n";

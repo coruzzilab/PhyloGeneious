@@ -155,14 +155,14 @@ if [[ ! -s $OID_USER_DIR/blast/blastres.blst ]]; then
 	$OID_HOME/bin/new_blast_parts.pl #make partn.faa (pgm estimates size #$ENV_WRAPPER 
 	#        NPART = $(/bina/ls OID_USER_DIR/blast/*.* | grep -c ".faa")
 	touch $OID_USER_DIR/blast/.Parts.done
-	$OID_HOME/bin/qsblast.pl -g 16 -n 12 -w 12 -q $MAXQS #$ENV_WRAPPER 
+	$OID_HOME/bin/qsblast.pl -g 4 -n 12 -w 12 -q $MAXQS #$ENV_WRAPPER # -g 16
 	#fi
 	#echo 'proc finished'
 	if ! [[ -s $OID_USER_DIR/blast/blastres.blst && -s $OID_USER_DIR/blast/genelen.blst ]]; then
 		echo "Error: failed to generate BLAST results database"
 		exit 1
 	else
-		echo "Archiving part files..."
+		echo "Archiving part files...";
 		E=0; while [[ $E -lt 1 ]]; do
 			tar -czf $OID_USER_DIR/blast/Parts.tar.gz $OID_USER_DIR/blast/Part[0-9]* --remove-files;
 			tar -czf $OID_USER_DIR/blast/speciesParts.tar.gz $OID_USER_DIR/blast/[A-z]*Part[0-9]* --remove-files;
