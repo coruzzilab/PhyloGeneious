@@ -101,7 +101,7 @@ my $OID_PROC;                     # oid.proc input file
 our @INGROUP;                     # Ingroup taxa
 our @OUTGROUP;                    # Outgroup taxa
 our $NCPU;                        # Number of CPU to be used
-our $VERBOSE;                     # Verbosity {0,1,2}
+our $VERBOSE = 0;                     # Verbosity {0,1,2}
 my $DEBUG = 0;                    # Debug mode
 our $HPC  = 'P';    #kind of hpc system default P=PBS,(S=SLUrm, C=CGE)
 our $TNTA = 200;    # cutoff for serial tnt processing
@@ -987,8 +987,13 @@ sub mclmcx() {
     close MFH;
 
     #$gz->close() if $DEBUG;
-    open( XX, ">$mcxdone" );    #create a done file
-    close XX;
+    if ( -f $tabFile ) {
+        open( XX, ">$mcxdone" );    #create a done file
+        close XX;
+    }
+    else { 
+        print "Error: weights file not created!"; 
+    }
     $ct = localtime;
     print "$ct mcxload done\n";
 }
