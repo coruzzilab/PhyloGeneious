@@ -84,6 +84,12 @@ pbs_filtered = subset(pbs, pbs >= pbs_cutt | pbs <= -pbs_cutt , select=c(clade, 
 write.table(pbs_filtered, sep="\t", file="partition_annotation_with_pbs_filtered.txt", quote = FALSE, row.names = FALSE, col.names = TRUE) # Save the pbs_filtered if will want to use it
 
 ### Run GO enrichment on the filtered PBS genes for each node ###
+for(x in c("","_up","_down")){
+if(x=="_up"){
+pbs_filtered = subset(pbs, pbs > 0, select=c(clade, partition, pbs, node_id, taxa_occupancy, model_gene_id, GO_id))
+}else if(x=="_down"){
+pbs_filtered = subset(pbs, pbs < 0, select=c(clade, partition, pbs, node_id, taxa_occupancy, model_gene_id, GO_id))
+}
 # generating a unique list of the node_ids to run GO enrichment on each node seperatly  
 node = unique(pbs_filtered$node_id)
 
@@ -120,5 +126,6 @@ for(i in node){
   fisher_table$p_adj_BH = p_adj
   fisher_table = fisher_table[order(fisher_table$p_adj_BH),] # sort by p_adj values (ascending)
   fisher_table_filtered = fisher_table[fisher_table$pvalue<0.05,] # save the enriched GO terms before applying FDR cutoff so that the user can apply his own on phylobrowse
-  write.csv(fisher_table_filtered,paste(paste(i,sep="_"), "_all_enriched_terms_table.csv", sep=""), row.names = FALSE)
+  write.csv(fisher_table_filtered,paste(paste(i,sep="_"),x,"_all_enriched_terms_table.csv", sep=""), row.names = FALSE)
+}
 }

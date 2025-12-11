@@ -239,7 +239,15 @@ fi
 
 # Generate big matrix
 echo 'Generating matrix ...'
+if [[ ${#INGROUP[@]} -lt 100 ]]; then
 $OID_BIN/orth2matrix.pl #$ENV_WRAPPER 
+else
+LOG=`sbatch --mem=45GB --time=04:00:00 --wrap="$OID_BIN/orth2matrix.pl"`
+echo "start qsid matrixjob ${LOG}"
+while [ $(squeue -u $USER | grep -q $LOG) == 0 ]; do
+	sleep 600
+done
+fi
 
 date
 time
@@ -253,7 +261,7 @@ fi
 echo "Tree search ..."
 NPOS=`grep -A1 "xread" Matrix.tnt | tail -n1|cut -d" " -f1`
 if [[ $NPOS -gt 1000000 ]]; then
-	echo "Matrix too large for automatic species tree search. Please run manually."
+	echo "Matrix too large for automatic species tree search. Please run treesearch.sh manually."
 else
 	if [[ -s jac.tre ]]; then
 		echo "Tree file already exists"

@@ -36,17 +36,33 @@ arrayqs () {
     if [[ $HPC == "S" ]]; then
         sbatch --array=0-$lastarray -o $LOGS/$outlog $script $args
     else
-        qsub -t 0-$lastarray -o $LOGS/mafft_logs/%J.out $script $args
+        qsub -t 0-$lastarray -o $LOGS/$outlog $script $args #mafft_logs/%J.out
     fi
 }
 
 getjobs () {
-    if [[ $HPC == "S" ]]; then
-        squeue -u $USER | tail -n +2 
-    else
-        qstat -e -u $MYUSER #check USER variable
-    fi
-    success=$?
+    local tries=0 max_tries=10 out rc
+    while true; do
+        if [[ $HPC == "S" ]]; then
+            out=$(squeue -u "$USER" 2>&1)
+        else
+            out=$(qstat -e -u $MYUSER 2>&1) #check USER variable
+        fi
+        rc=$?
+        if [[ $rc -ne 0 ]] || [[ "$out" == *"slurm_load_jobs error"* ]]; then # if squeue failed, retry
+            ((tries++))
+            if (( tries >= max_tries )); then
+                # give up and return last output/error
+                echo "$out"
+                return
+            fi
+            sleep 5
+            continue
+        else
+            echo "$out" #| tail -n +2
+            return
+        fi
+    done
 }
 
 # mafft

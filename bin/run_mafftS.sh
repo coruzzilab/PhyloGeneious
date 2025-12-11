@@ -25,7 +25,9 @@ if [[ ! -f oid.nex ]]; then
 		$ENV_WRAPPER mafft --nofft --retree 1 --memsavetree --quiet --anysymbol --thread $2 FAMILY >FAMILY.aligned
 	fi
 	cd $OID_USER_DIR
+	if [[ -s $OID_DATA/"$arg1"/FAMILY.aligned ]]; then
 	$OID_HOME/bin/makenex.pl $1 #$ENV_WRAPPER 
+	fi
 fi
 date
 time

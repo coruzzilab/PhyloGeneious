@@ -18,9 +18,13 @@ echo hello for mafft
 OID_DATA=$OID_USER_DIR/data
 
 cd $OID_DATA/"$arg1"
-$ENV_WRAPPER mafft --auto --quiet --anysymbol --thread "$arg2" FAMILY >FAMILY.aligned
-cd $OID_USER_DIR
-$OID_HOME/bin/makenex.pl "$arg1" #$ENV_WRAPPER 
+if [[ ! -f oid.nex ]]; then
+	$ENV_WRAPPER mafft --auto --quiet --anysymbol --thread "$arg2" FAMILY >FAMILY.aligned
+	cd $OID_USER_DIR
+	if [[ -s $OID_DATA/"$arg1"/FAMILY.aligned ]]; then
+	$OID_HOME/bin/makenex.pl "$arg1" #$ENV_WRAPPER 
+	fi
+fi
 
 date
 time

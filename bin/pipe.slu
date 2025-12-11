@@ -1,6 +1,6 @@
 #!/bin/bash
 ##SBATCH -p parallel
-#SBATCH --mem 22GB
+#SBATCH --mem 16GB #reduce from 22
 ##SBATCH --ntasks=2
 ##SBATCH --natasks-per-core=1
 #SBATCH  -c 2
@@ -12,6 +12,6 @@
 echo hello
 #srun -p serial --mem 22GB -n 1 -c 8 -o job.%J.out $OID_HOME/bin/run_just_bl.sh&
 export MY_SHELL=$0
-export MY_MEM=22GB
+export MY_MEM=16GB
 $OID_HOME/bin/run_pipeline.sh
 

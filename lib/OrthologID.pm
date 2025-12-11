@@ -945,6 +945,7 @@ sub mclmcx() {
         my @blastOutput = ();                                             #empty
         my $g           = nextblst( $blfa, \@blastOutput, \$lastgene );
         last if !$g;
+	$g =~ s/[^A-z0-9\_\.\-\#\>]+//;
         my %seen;
         my $seqLen = $geneLen{$g};
         if ( !$seqLen ) {
@@ -1054,6 +1055,7 @@ sub mclCluster() {
             my @blastOutput = ();        #empty
             my $g           = nextblst( $blfa, \@blastOutput, \$lastgene );
             last if !$g;
+	    $g =~ s/[^A-z0-9\_\.\-\#\>]+//;
             my %seen;
             my $seqLen = $geneLen{$g};
             if ( !$seqLen ) {

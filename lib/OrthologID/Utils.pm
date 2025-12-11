@@ -318,6 +318,13 @@ sub genSuperMatrix {
         my @annokeys = split " ", (split /\|/, $$annoRef[$ogindex])[2];
         foreach my $name (@annokeys) {#while (my ($name, $seq) = each %seqs) {
             my $seq = $seqs{$name};
+            if (! defined $seq) {
+                print "Error: mismatch in sequence names\n";
+                print $$annoRef[$ogindex] . "\n";
+                print keys %seqs;
+                print "\n";
+                exit(1);
+            }
             
             # Calculate/Check length
             if ($len == 0) {

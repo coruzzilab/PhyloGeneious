@@ -21,13 +21,17 @@ date +%s >$MYSTART
 echo mafft "$arg1" "$arg2" >>$MYSTART
 
 cd $OID_DATA/"$arg1"
-$ENV_WRAPPER mafft --auto --quiet --anysymbol --thread "$arg2" FAMILY >FAMILY.aligned
-if [[ ! -s FAMILY.aligned ]]; then
-	echo "failed re-run mafft "
-	$ENV_WRAPPER mafft --nofft --retree 1 --memsavetree --quiet --anysymbol --thread $arg2 FAMILY >FAMILY.aligned
+if [[ ! -f oid.nex ]]; then
+	$ENV_WRAPPER mafft --auto --quiet --anysymbol --thread "$arg2" FAMILY >FAMILY.aligned
+	if [[ ! -s FAMILY.aligned ]]; then
+		echo "failed re-run mafft "
+		$ENV_WRAPPER mafft --nofft --retree 1 --memsavetree --quiet --anysymbol --thread $arg2 FAMILY >FAMILY.aligned
+	fi
+	cd $OID_USER_DIR
+	if [[ -s $OID_DATA/"$arg1"/FAMILY.aligned ]]; then
+	$OID_HOME/bin/makenex.pl "$arg1" #$ENV_WRAPPER 
+	fi
 fi
-cd $OID_USER_DIR
-$OID_HOME/bin/makenex.pl "$arg1" #$ENV_WRAPPER 
 
 date
 time

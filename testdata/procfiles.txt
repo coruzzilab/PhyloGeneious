@@ -1,7 +1,7 @@
 CUTOFF=20
 log +oid.log;
 taxname=;
-taxname +64;
+taxname +85;
 report +200
 nstates 32;
 mxram 2000;
@@ -29,7 +29,7 @@ proc;
 CUTOFF=150
 log +oid.log;
 taxname=;
-taxname +64;
+taxname +85;
 report +200
 nstates 32;
 mxram 2000;
@@ -70,7 +70,7 @@ proc;
 CUTOFF=300
 log +oid.log;
 taxname=;
-taxname +64;
+taxname +85;
 report +200
 nstates 32;
 mxram 2000;

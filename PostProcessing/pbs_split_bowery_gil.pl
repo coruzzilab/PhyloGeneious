@@ -143,12 +143,21 @@ if(length($l) && length($m) && length($n) && length($t)){
 		open(OUTFILE, ">unconstrained.proc") || die("Could not open unconstrained.proc!");
 		print(OUTFILE $tnt);
 		close(OUTFILE);
-		open(JOBFILE,">unconstrained.sbatch") || die("Could not open unconstrained.sbatch!");
-		print JOBFILE "#!/bin/bash\n#SBATCH --verbose\n#SBATCH --export=ALL\n#SBATCH --job-name=PBS.$c\n#SBATCH --output=PBS.$c.out\n#SBATCH --error=PBS.$c.err\n#SBATCH --time=24:00:00\n#SBATCH --nodes=1\n#SBATCH --cpus-per-task=1\n#SBATCH --mem=32GB\n";#reduced time from 168hrs
-		print JOBFILE "cd $pwd\n";
-		print JOBFILE "if ! [[ -f \$HOME/.passwordfile.tnt ]]; then cp \$OID_HOME/.passwordfile.tnt \$HOME; fi\n";
-		print JOBFILE "tnt bground p unconstrained.proc\n";
-		close JOBFILE;
+		if($HPC=="S"){
+			open(JOBFILE,">unconstrained.sbatch") || die("Could not open unconstrained.sbatch!");
+			print JOBFILE "#!/bin/bash\n#SBATCH --verbose\n#SBATCH --export=ALL\n#SBATCH --job-name=PBS.$c\n#SBATCH --output=PBS.$c.out\n#SBATCH --error=PBS.$c.err\n#SBATCH --time=24:00:00\n#SBATCH --nodes=1\n#SBATCH --cpus-per-task=1\n#SBATCH --mem=32GB\n";#reduced time from 168hrs
+			print JOBFILE "cd $pwd\n";
+			print JOBFILE "if ! [[ -f \$HOME/.passwordfile.tnt ]]; then cp \$OID_HOME/.passwordfile.tnt \$HOME; fi\n";
+			print JOBFILE "tnt bground p unconstrained.proc\n";
+			close JOBFILE;
+		}
+		else{
+			open(JOBFILE,">unconstrained.pbs") || die("Could not open unconstrained.pbs!");
+			print JOBFILE "#!/bin/bash\n#PBS -l nodes=1:ppn=1,walltime=24:00:00\n#PBS -N PBS.$c\n#PBS -e $pwd/PBS.$c.error\n#PBS -o $pwd/PBS.$c.out\n#PBS -l mem=32GB\n";
+			print JOBFILE "cd $pwd\n";
+			print JOBFILE "tnt bground p unconstrained.proc\n";
+			close JOBFILE;
+		}
 		if($skip < 1){
 			if($HPC=="S"){
 				system "sbatch unconstrained.sbatch";
@@ -192,7 +201,12 @@ if(length($l) && length($m) && length($n) && length($t)){
 				print(OUTFILE $tnt);
 				close(OUTFILE);
 				open JOBFILE, ">pbs.$c.sub" || die "Could not open pbs.$c.sub";
-				print JOBFILE "#!/bin/bash\n#SBATCH --verbose\n#SBATCH --export=ALL\n#SBATCH --job-name=PBS.$c\n#SBATCH --output=PBS.$c.out\n#SBATCH --error=PBS.$c.err\n#SBATCH --time=24:00:00\n#SBATCH --nodes=1\n#SBATCH --cpus-per-task=1\n#SBATCH --mem=32GB\n";#reduced time from 168hrs
+				if($HPC=="S"){
+					print JOBFILE "#!/bin/bash\n#SBATCH --verbose\n#SBATCH --export=ALL\n#SBATCH --job-name=PBS.$c\n#SBATCH --output=PBS.$c.out\n#SBATCH --error=PBS.$c.err\n#SBATCH --time=24:00:00\n#SBATCH --nodes=1\n#SBATCH --cpus-per-task=1\n#SBATCH --mem=32GB\n";#reduced time from 168hrs
+				}
+				else{
+					print JOBFILE "#!/bin/bash\n#PBS -l nodes=1:ppn=1,walltime=24:00:00\n#PBS -N PBS.$c\n#PBS -e $pwd/PBS.$c.error\n#PBS -o $pwd/PBS.$c.out\n#PBS -l mem=32GB\n";
+				}
 				print JOBFILE "cd $pwd\n";
 				print JOBFILE "if ! [[ -f $HOME/.passwordfile.tnt ]]; then cp $OID_HOME/.passwordfile.tnt $HOME; fi\n";
 				print JOBFILE "tnt bground p temporary-tnt.$c.proc\n";
@@ -203,7 +217,7 @@ if(length($l) && length($m) && length($n) && length($t)){
 					my $jid = `sbatch pbs.$c.sub`;
 				}
 				else{
-					my $jid = `qsub pbs.$c.sub`;
+					my $jid = `qsub pbs.$c.sub`; #-V ?
 				}
 				#push @jobs, $jid;
 				sleep(90); #prevent TNT from overloading

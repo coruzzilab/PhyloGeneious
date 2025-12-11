@@ -155,45 +155,32 @@ date
 time
 if [[ "\$arg1" == "-b" ]]; then
 	#touch blast/.\$arg2.done
-	echo ".\$arg2.done" >> blast/.Parts.done
+	print ".\$arg2.done" >> blast/.Parts.done
 fi
 EOF
 # End job script
 chmod a+x $JOB_SCRIPT
 
 # All-all BLAST
+print hpc set $HPC
 if [[ ! -s $OID_USER_DIR/blast/blastres.blst ]]; then
 	cp $OID_USER_DIR/blastdb/combined.fa $OID_USER_DIR/blast
 	$OID_HOME/bin/new_blast_parts.pl #make partn.faa (pgm estimates size #$ENV_WRAPPER 
 	#        NPART = $(/bina/ls OID_USER_DIR/blast/*.* | grep -c ".faa")
+	touch $OID_USER_DIR/blast/.Parts.done
 	$OID_HOME/bin/qsblast.pl -g 4 -n 12 -w 12 -q $MAXQS #$ENV_WRAPPER #-g 16
-	#	for i in "${INGROUP[@]}" "${OUTGROUP[@]}" ; do
-	##		print "Submitting job for $i-against-all BLAST..."
-	#		qsub -l nodes=1:ppn=$NCPU,walltime=8:00:00 $JOB_SCRIPT -v arg1="-b",arg2="$i"
-	#	done
-	#	print "Waiting for BLAST jobs to finish ..."
-	#date
-	#time
-	#	while sleep 300; do
-	#		for i in "${INGROUP[@]}" "${OUTGROUP[@]}" ; do
-	#			if [[ ! -f $OID_USER_DIR/blast/.$i.done ]]; then
-	#				continue 2
-	#			fi
-	#		done
-	#		break
-	#	done
-	#date
-	#time
-
-	#	print "Merging BLAST data ..."
-	#	$OID_BIN/orthologid.pl -B
+	
 	if ! [[ -s $OID_USER_DIR/blast/blastres.blst && -s $OID_USER_DIR/blast/genelen.blst ]]; then
 		print -u2 "Error: failed to generate BLAST results database"
 		exit 1
 	else
-		echo "Archiving part files..."
-		tar -czf $OID_USER_DIR/blast/Parts.tar.gz $OID_USER_DIR/blast/Part[0-9]* --remove-files
-		tar -czf $OID_USER_DIR/blast/speciesParts.tar.gz $OID_USER_DIR/blast/[A-z]*Part[0-9]* --remove-files
+		print "Archiving part files..."
+		E=0; while [[ $E -lt 1 ]]; do
+			tar -czf $OID_USER_DIR/blast/Parts.tar.gz $OID_USER_DIR/blast/Part[0-9]* --remove-files
+			tar -czf $OID_USER_DIR/blast/speciesParts.tar.gz $OID_USER_DIR/blast/[A-z]*Part[0-9]* --remove-files
+			print "Archiving complete!";
+			E=1;
+		done &
 	fi
 else
 	print "All-aginst-all BLAST results exist ... skipping"
@@ -201,7 +188,8 @@ fi
 date
 time
 # Create gene families
-if ! /bin/ls -d $OID_USER_DIR/data/[1-9] >/dev/null 2>&1; then
+#if ! /bin/ls -d $OID_USER_DIR/data/[1-9] >/dev/null 2>&1; then
+if [[ ! -f $OID_USER_DIR/data/.family.done ]]; then
 	print "Creating families ..."
 	if [[ -s $OID_USER_DIR/blast/clusters ]]; then
 	# Clustering done, just create family directories
@@ -228,7 +216,12 @@ fi
 print "running new job select"
 ## new job to grep all data subdir for Family size
 $OID_HOME/bin/rdfamdb.pl #$ENV_WRAPPER 
-#
+print "Archiving small clusters..."
+E=0; while [[ $E -lt 1 ]]; do
+	tar -xzf $OID_USER_DIR/data/small_clusters.tar.gz $OID_USER_DIR/data/S[1-9]* --remove-files
+	print "Archiving complete!";
+	E=1;
+done &
 rm log/job/schedone
 while [[ ! -f log/job/schedone ]]; do
 	$OID_HOME/bin/orthologid.pl -s 'hello' #$ENV_WRAPPER 
@@ -245,37 +238,67 @@ $OID_BIN/orthologid.pl -O #$ENV_WRAPPER
 date
 time
 
+#Fix tree run errors
+print "Checking for tree run errors..."
+RERUN=0
+source $OID_BIN/checktrees.sh
+if [[ $RERUN == 1 ]]; then
+	# Extract orthologs again
+	print "Extracting skipped orthologs ..."
+	$OID_BIN/orthologid.pl -O #$ENV_WRAPPER 
+	date
+	time
+fi
+
 # Generate big matrix
 print 'Generating matrix ...'
+if [[ ${#INGROUP[@]} -lt 100 ]]; then
 $OID_BIN/orth2matrix.pl #$ENV_WRAPPER 
+else
+LOG=`print "$OID_BIN/orth2matrix.pl" | qsub -l mem=45GB,walltime=04:00:00 -N wrap`
+print "start qsid matrixjob ${LOG}"
+while [ $(qstat -u $USER | grep -q $LOG) == 0 ]; do
+	sleep 600
+done
+fi
 
 date
 time
+
+if [[ ! -f Matrix.tnt ]]; then
+	print "Matrix construction failed!"
+	exit 1
+fi
 
 # Run tree searches
-echo "Tree search ..."
-if [[ -s jac.tre ]]; then
-	echo "Tree file already exists"
+print "Tree search ..."
+NPOS=`grep -A1 "xread" Matrix.tnt | tail -n1|cut -d" " -f1`
+if [[ $NPOS -gt 1000000 ]]; then
+	print "Matrix too large for automatic species tree search. Please run treesearch.sh manually."
 else
-	$ENV_WRAPPER tnt bground p $OID_HOME/PostProcessing/mpt.proc
-	$ENV_WRAPPER tnt bground p $OID_HOME/PostProcessing/jac.proc
-fi
-while sleep 300; do
-	#	if [[ ! -f Jacknife.tre ]]; then
-	if [[ ! -s jac.tre ]]; then
-		continue
+	if [[ -s jac.tre ]]; then
+		print "Tree file already exists"
+	else
+		$ENV_WRAPPER tnt bground p $OID_HOME/PostProcessing/mpt.proc
+		$ENV_WRAPPER tnt bground p $OID_HOME/PostProcessing/jac.proc
 	fi
-	break
-done
+	while sleep 300; do
+		#	if [[ ! -f Jacknife.tre ]]; then
+		if [[ ! -s jac.tre ]]; then
+			continue
+		fi
+		break
+	done
+	
+	date
+	time
+	
+	print "Processing trees..."
+	$ENV_WRAPPER python $OID_HOME/PostProcessing/fix_tree.py mpt.tre mpt_fixed.tre
+	$ENV_WRAPPER python $OID_HOME/PostProcessing/fix_tree.py mpt.nel mpt_nel_fixed.tre
+	$ENV_WRAPPER python $OID_HOME/PostProcessing/fix_tree.py jac.tre jac_fixed.tre
+fi
 
-date
-time
-
-echo "Processing trees..."
-$ENV_WRAPPER python $OID_HOME/PostProcessing/fix_tree.py mpt.tre mpt_fixed.tre
-$ENV_WRAPPER python $OID_HOME/PostProcessing/fix_tree.py mpt.nel mpt_nel_fixed.tre
-$ENV_WRAPPER python $OID_HOME/PostProcessing/fix_tree.py jac.tre jac_fixed.tre
-
-echo "Pipeline complete!"
+print "Pipeline complete!"
 date
 time

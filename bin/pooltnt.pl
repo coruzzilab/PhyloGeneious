@@ -79,13 +79,16 @@ for ( my $fam = $startfam ; $fam <= $endfam ; $fam++ ) {
     print "in child  fam $fam\n";
     alignFamily("$famdol");
     alarm 600;    #these are fast rtns but may hang
-    makeTree("$famdol");
-    alarm 0;      #cancel alarm it works
-
+    if ( ! -s "data/$fam/FAMILY.aligned") {
+        print "unknown alignment error for $fam\n";
+    } else {
+        makeTree("$famdol");
     #        my $status = system("tnt p $tnt 0</dev/null 1>&0 2>&0");
     #
-    my $tm = localtime;
-    print "$tm tnt with $fam done \n";
+        my $tm = localtime;
+        print "$tm tnt with $fam done \n";
+    }
+    alarm 0;      #cancel alarm it works
     exit;
 }
 
