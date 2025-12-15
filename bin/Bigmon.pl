@@ -406,6 +406,10 @@ sub chkfam {
         }
         $wallv = substr $oldv[2], 0, 2;
         $wallv = int( $wallv * 3 / 2 );
+        if ( $wallv > 24 ) { 
+            print "runtime for $fam exceeds max time 24 hrs - fail";
+            return 0;
+        }
         my $oldwall = pop @stuff;
         substr( $oldwall, 0, 2 ) = $wallv;    #up time
 
