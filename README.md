@@ -36,7 +36,7 @@ cd PhyloGeneious
 ./setup_license.sh
 ```
 
-Perl and the DB_File module must be installed on your system and discoverable through your $PATH variable. The rest of these programs have been compiled into a docker image available [here](https://hub.docker.com/repository/docker/vsondervan/phylogeneious/general). To install, run 
+Perl and the DB_File module must be installed on your system and discoverable through your $PATH variable. The rest of these programs have been compiled into a docker image available [here](https://hub.docker.com/r/vsondervan/phylogeneious). To install, run 
 ```sh
 docker pull vsondervan/phylogeneious
 ``` 
