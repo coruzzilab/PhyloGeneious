@@ -15,17 +15,15 @@ various programs can not only submit jobs but also monitor them for completion. 
 
 The Phylogeneious pipeline uses various programs to complete the analysis:
 
-1.  Perl > v.5.20 and the DB_File.pm module
-2.  BLAST+ 
+1.  **Perl > v.5.20 and the [DB_File.pm](https://github.com/pmqs/DB_File) module**
+2.  BLAST+, DIAMOND, or MMSeqs2 
 3.  MCL
 4.  MAFFT
 5.  TNT
 6.  RAxML (raxmlHPC-PTHREADS-AVX) # for the post-analysis total evidence tree search
 7.  Python >= 3.6
-8.  R # optional - for post-analysis GO enrichment
-9.  DIAMOND # optional for sequence search
-10. MMSeqs2 # optional for sequence search
-11. Oblong # optional for gene tree search
+8.  Oblong # optional for gene tree search - we recommend the version in our docker image
+9.  R # optional - for post-analysis GO enrichment
 
 ## Installation:
 
@@ -36,7 +34,7 @@ cd PhyloGeneious
 ./setup_license.sh
 ```
 
-Perl and the DB_File module must be installed on your system and discoverable through your $PATH variable. The rest of these programs have been compiled into a docker image available [here](https://hub.docker.com/r/vsondervan/phylogeneious). To install, run 
+Perl and the DB_File module **must be installed on your system** and discoverable through your $PATH variable. The rest of these programs have been compiled into a docker image available [here](https://hub.docker.com/r/vsondervan/phylogeneious). To install, run 
 ```sh
 docker pull vsondervan/phylogeneious
 ``` 
