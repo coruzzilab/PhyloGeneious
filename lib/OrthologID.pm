@@ -96,6 +96,7 @@ our $OID_BLASTDIR;                # Directory to store OrthologID blast results
 my $BLAST_HOME;                   # NCBI BLAST installation directory
 our $SEARCHTYPE = 'B';            # similarity search method default B=BLASTP,(D=DIAMOND, M=mmseqs2)
 our $TREEPROGRAM = 'TNT';         # tree building program default TNT,(OBLONG)
+my $CALLBYOUTGROUP = 0;           # Use default ortholog calling (0) or outgroup-informed (1) 
 our $OID_COMB;                    # combined fa files for all input
 my $OID_PROC;                     # oid.proc input file
 our @INGROUP;                     # Ingroup taxa
@@ -137,9 +138,7 @@ die "OID_USER_DIR environment variable undefined!\n" if !$ENV{'OID_USER_DIR'};
 $OID_HOME       = $ENV{'OID_HOME'};
 $OID_USER_DIR   = $ENV{'OID_USER_DIR'};
 $ENV_WRAPPER  = $ENV{'ENV_WRAPPER'};
-if (!defined($ENV_WRAPPER)){
-    $ENV_WRAPPER = "";
-}
+$ENV_WRAPPER = "" if !defined($ENV_WRAPPER);
 $OID_BLASTDIR   = "$OID_USER_DIR/blast";
 $BLAST_RES_DB   = "$OID_BLASTDIR/blastres.blst";
 $OID_DATADIR    = "$OID_USER_DIR/data";
@@ -263,6 +262,9 @@ sub initOID {
         }
         elsif (/^\s*TREEPROGRAM\s*=\s*(.+?)\s*$/) {   # tree build method
             $TREEPROGRAM = $1;
+        }
+        elsif (/^\s*CALLBYOUTGROUP\s*=\s*(.+?)\s*$/) {   # orthology call method
+            $CALLBYOUTGROUP = $1;
         }
         elsif (/^\s*INGROUP\s*=\s*(.+?)\s*$/) {    # Ingroup species prefixes
             $_       = $1;
@@ -590,69 +592,80 @@ sub allBlast {
             close FA;
 
             # now for change as described above - much more interleaved
-            open FA, ">$blastResDB"
-              or die "cannot open blastresdb $blastResDB\n";
-
-            #            $geneLen{$geneid} = length($genSeq) if ($geneid);
-            #            my %allRes;
-            #            my %allLen;
-
-            my $locus  = '';
-            my $target = '';
-            my $count  = 0;
-            my $ct     = 0;
-
-            #        foreach my $sp (@INGROUP, @OUTGROUP) {
-            for ( my $part = 1 ; $part <= $Parts ; $part++ )
-            {    # each part has a unique set of source genes
-                $ct       = localtime;
-                %blastRes = ();
-                print "$ct Combining BLAST and length results for $part\n"
-                  if $verbose;
-                $| = 1;    # flush STDOUT
-
-        #               for(my $part=1;$part<=$Parts;$part++){ #$sp (@INGROUP, @OUTGROUP)
-                foreach my $sp ( @INGROUP, @OUTGROUP ) {
-
-            #                my %spGeneLen;
-            #                my $spBlastResDB = "$OID_BLASTDIR/Part$part" . "_blastres.dbm";
-                    my $spblstfl = "$OID_BLASTDIR/$sp.Part$part.blst";
-                    if ( !-f $spblstfl ) {
-                        print STDERR
-                          "Blast results for $sp.Part$part not found!\n";
-                        next;
-                    }
-                    open FH, "$spblstfl"
-                      or print "blast failed for $spblstfl\n";
-                    my $oldlocus = '';
-                    my %tseen    = ();
-                    while (<FH>) {
-                        my @stuff = split;
-                        $target = $stuff[1];    #target gene
-                        $locus  = $stuff[0];
-                        if ( $locus ne $oldlocus ) {
-                            %tseen            = ();
-                            $oldlocus         = $locus;
-                            $blastRes{$locus} = ""
-                              if !defined $blastRes{$locus};
-                        }
-                        next if defined $tseen{$target};
-                        $blastRes{$locus} .= $_;
-                        $tseen{$target} = 1;
-
-                        #                    $spBlastRes{$locus} .= $_;
-                    }
-                    close FH;
-                }
-                foreach $locus ( keys %blastRes ) {
-                    print FA ">$locus\n$blastRes{$locus}"
-                      ;    #i think there are imbeded c/r
-                    $count++;
-                }
-            }
-            close FA;
+            unlink $blastResDB;
+            ##    my $locus  = '';
+            ##    my $target = '';
+            ##    my $count  = 0;
+                my $ct     = 0;
+    
+            print "$ct Combining BLAST and length results\n";
+            
+            my $status = system("bash $OID_HOME/bin/makeblastresdb.sh $outputDir $blastResDB");
+                die "BLAST results DB error: $?" unless $status == 0;
+            
+            ##foreach my $sp ( @INGROUP, @OUTGROUP ) {
+            ##    open FA, ">>$blastResDB"
+            ##    or die "cannot open blastresdb $blastResDB\n"; #$sp"."_"."$blastResDB
+            ##
+            ##    #            $geneLen{$geneid} = length($genSeq) if ($geneid);
+            ##    #            my %allRes;
+            ##    #            my %allLen;
+            ##
+            ##    print "$ct Combining BLAST and length results for $sp\n";
+            ##    #        foreach my $sp (@INGROUP, @OUTGROUP) {
+            ##    for ( my $part = 1 ; $part <= $Parts ; $part++ )
+            ##    {    # each part has a unique set of source genes
+            ##        $ct       = localtime;
+            ##        %blastRes = ();
+            ##        print "$ct Combining BLAST and length results for $part\n"
+            ##        if $verbose;
+            ##        $| = 1;    # flush STDOUT
+            ##
+        #   ##                for(my $part=1;$part<=$Parts;$part++){ #$sp (@INGROUP, @OUTGROUP)
+#           ##         foreach my $sp ( @INGROUP, @OUTGROUP ) {
+            ##
+            ##    #                my %spGeneLen;
+            ##    #                my $spBlastResDB = "$OID_BLASTDIR/Part$part" . "_blastres.dbm";
+            ##            my $spblstfl = "$OID_BLASTDIR/$sp/$sp.Part$part.blst";
+            ##            if ( !-f $spblstfl ) {
+            ##                print STDERR
+            ##                "Blast results for $sp.Part$part not found!\n";
+            ##                next;
+            ##            }
+            ##            open FH, "$spblstfl"
+            ##            or print "blast failed for $spblstfl\n";
+            ##            my $oldlocus = '';
+            ##            my %tseen    = ();
+            ##            while (<FH>) {
+            ##                my @stuff = split;
+            ##                $target = $stuff[1];    #target gene
+            ##                $locus  = $stuff[0];
+            ##                if ( $locus ne $oldlocus ) {
+            ##                    %tseen            = ();
+            ##                    $oldlocus         = $locus;
+            ##                    $blastRes{$locus} = ""
+            ##                    if !defined $blastRes{$locus};
+            ##                }
+            ##                next if defined $tseen{$target};
+            ##                $blastRes{$locus} .= $_;
+            ##                $blastRes{$locus} =~ s/[^A-z0-9\_\.\-\#\>\|]+//;
+            ##                $tseen{$target} = 1;
+            ##
+            ##                #                    $spBlastRes{$locus} .= $_;
+            ##            }
+            ##            close FH;
+#           ##         }
+            ##        foreach $locus ( keys %blastRes ) {
+            ##            print FA ">$locus\n$blastRes{$locus}"
+            ##            ;    #i think there are imbeded c/r
+            ##            $count++;
+            ##        }
+            ##    }
+            ##    close FA;
+            ##    #system("cat -v $sp"."_"."$blastResDB >> $blastResDB");
+            ##}
             $ct = localtime;
-            print "$ct completed blastres merge for $count files\n";
+            print "$ct completed blastres merge for $Parts files\n"; #$count
 
             #                my $spGeneLenDB = "$OID_BLASTDIR/Part$part" . "_genelen.dbm";
             #                if ( !-f $spGeneLenDB ) {
@@ -733,9 +746,12 @@ sub allBlast {
     #    close FA;
     print "BLASTing .. $prefix\n";
     foreach my $sp ( @INGROUP, @OUTGROUP ) {
+        if ( !-d $OID_BLASTDIR/$sp ) {
+            mkdir $OID_BLASTDIR/$sp, 0755 or die "Cannot create $OID_BLASTDIR/$sp: $!";
+        }
         my $t = localtime;
         print "$t db sb $sp\n";
-        my $outfile = "$OID_BLASTDIR/$sp.Part$prefix.blst";
+        my $outfile = "$OID_BLASTDIR/$sp/$sp.Part$prefix.blst";
         if ( system( "grep -q '\\.$sp\\.Part$prefix\\.done' $OID_BLASTDIR/.$sp.Part.done") < 1 ) {
             print "$sp.Part$prefix done - skipping\n" if $verbose > 1;
             next;
@@ -752,14 +768,14 @@ sub allBlast {
                 my $spdb = $OID_USER_DIR . "/blastdb/" . $sp . ".dmnd";
                 # $eCutOff = 
                 $blastCmd =
-                    "$ENV_WRAPPER /scratch/vms351/diamond $BLASTALL --db $spdb --query $blstinfile --evalue $eCutOff "
+                    "$ENV_WRAPPER diamond $BLASTALL --db $spdb --query $blstinfile --evalue $eCutOff "
                     . "--threads $numProc --out $outfile --outfmt 6 --ultra-sensitive --max-target-seqs 500";
             }
             elsif ($SEARCHTYPE eq 'M') {
                 my $spdb = $OID_USER_DIR . "/blastdb/" . $sp . ".DB";
                 # $eCutOff = 
                 $blastCmd =
-                    "$ENV_WRAPPER /scratch/vms351/mmseqs/bin/mmseqs easy-search $blstinfile $spdb $outfile tmp " 
+                    "$ENV_WRAPPER mmseqs easy-search $blstinfile $spdb $outfile tmp " 
                     . "--search-type 1 --format-mode 0 -e $eCutOff --threads $numProc -s 7.5 --max-seqs 500";
             }
             else {
@@ -774,6 +790,7 @@ sub allBlast {
                 print XX ".$sp.Part$prefix.done\n";
             close XX;
         }
+
 
         #        my @blastResults = split /\n/, $blastOutput;
         #        foreach my $res(@blastResults){
@@ -810,7 +827,7 @@ sub rdblastrs {    #pass ref to %blastRes and %geneLen
     }
     print "loaded $count gene lengths\n";
     close FA;
-
+    $count = 0;
     open FA, "$blastResDB" or die "cannot open blastresdb $blastResDB\n";
     my $locus = "";
     while (<FA>) {
@@ -828,6 +845,7 @@ sub rdblastrs {    #pass ref to %blastRes and %geneLen
         $$pblst{$locus} .= $_;
     }    ## while fa
     close FA;
+
     print "loaded $count gene locus\n";
 }
 
@@ -945,7 +963,7 @@ sub mclmcx() {
         my @blastOutput = ();                                             #empty
         my $g           = nextblst( $blfa, \@blastOutput, \$lastgene );
         last if !$g;
-	$g =~ s/[^A-z0-9\_\.\-\#\>]+//;
+        $g =~ s/[^A-z0-9\_\.\-\#\>]+//;
         my %seen;
         my $seqLen = $geneLen{$g};
         if ( !$seqLen ) {
@@ -992,8 +1010,8 @@ sub mclmcx() {
         open( XX, ">$mcxdone" );    #create a done file
         close XX;
     }
-    else { 
-        print "Error: weights file not created!"; 
+    else {
+        print "Error: weights file not created!";
     }
     $ct = localtime;
     print "$ct mcxload done\n";
@@ -1055,7 +1073,7 @@ sub mclCluster() {
             my @blastOutput = ();        #empty
             my $g           = nextblst( $blfa, \@blastOutput, \$lastgene );
             last if !$g;
-	    $g =~ s/[^A-z0-9\_\.\-\#\>]+//;
+            $g =~ s/[^A-z0-9\_\.\-\#\>]+//;
             my %seen;
             my $seqLen = $geneLen{$g};
             if ( !$seqLen ) {
@@ -1236,7 +1254,7 @@ sub makeFamily() {
                 print TMPIDS $spsInFam{$sps};
                 close TMPIDS;
                 @out =
-                  `$FASTACMD -db $sps -entry_batch tempIDs -outfmt '>%a %s'`;
+                  `$FASTACMD -db $sps -entry_batch tempIDs -outfmt '>%a %s' |tr -dc '[:alnum:]\n#._\\-* >:;|'`; #remove special characters added by blastdb
                 for ( my $i = 0 ; $i <= $#out ; $i++ ) { $out[$i] =~ s/\s/\n/; }
                 print FFH @out;
             }
@@ -1544,7 +1562,7 @@ sub makeTree {
                 select($oldFH);
             }
             if (! $ENV_WRAPPER eq "") {
-                my $status = system("runtnta.pl $maxcut "); #$ENV_WRAPPER 
+                my $status = system("runtnta.pl $maxcut "); #$ENV_WRAPPER
             }
             else {
                 my $status = system("runtnta.pl $maxcut ");
@@ -2562,6 +2580,9 @@ sub findOrthologs($) {
     my $thisFunc     = ( caller(0) )[3];
     my $treeFile     = "oid.tre";
     my $orthologFile = "orthologs";
+    if ( $CALLBYOUTGROUP ) {
+        $orthologFile = "hierorthologs"
+    }
 
     # Change to data dir
     my $savDir = getcwd;
@@ -2593,9 +2614,16 @@ sub findOrthologs($) {
 
         #my $parenTree = (untranslateTree($treeFile))[0];
         my $parenTree = ( parentheticalTree($treeFile) )[0];
-        my $phyTree =
-          new OrthologID::PhyloTree( $parenTree, [ ( @INGROUP, @OUTGROUP ) ] );
-        my @orthGroups = $phyTree->orthologGroups( @INGROUP, @OUTGROUP );
+        my @orthGroups;
+        if ( $CALLBYOUTGROUP ) { #change to hierarchical
+            my $phyTree =
+              new OrthologID::PhyloTree( $parenTree, [ ( @INGROUP, @OUTGROUP ) ], [ ( @OUTGROUP ) ] );
+            @orthGroups = $phyTree->hierOrthologGroups( @INGROUP, @OUTGROUP );
+        } else {
+            my $phyTree =
+              new OrthologID::PhyloTree( $parenTree, [ ( @INGROUP, @OUTGROUP ) ] );
+            @orthGroups = $phyTree->orthologGroups( @INGROUP, @OUTGROUP );
+        }
         open FH, ">$orthologFile"
           or die "$thisFunc: failed to open ortholog file for writing: $!\n";
         foreach my $gp (@orthGroups) {

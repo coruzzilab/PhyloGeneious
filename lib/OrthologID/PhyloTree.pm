@@ -38,7 +38,13 @@ sub new($$) {
     my $package       = shift;
     my $parenTree     = shift;
     my $speciesPrefix = shift;
-    my $treeObj       = toTreeObj( $parenTree, $speciesPrefix );
+    my $outgroupPrefix = shift;
+    my $treeObj;
+    if (defined($outgroupPrefix)) {
+        $treeObj = toAncTreeObj( $parenTree, $speciesPrefix );
+    }else{
+        $treeObj = toTreeObj( $parenTree, $speciesPrefix );
+    }
     bless $treeObj, $package;
     return $treeObj;
 }
@@ -149,6 +155,132 @@ sub toTreeObj {
 }
 
 #
+# Generate a hierarchical tree object from a parenthetical tree
+#
+sub toAncTreeObj {
+    my $pTree    = shift;
+    my $spPrefix = shift;
+    my $outPrefix = shift;
+
+    my $nodeNum = 0;
+
+    # Create root node; remove root parentheses
+    my $treeObj = newNode( undef, $nodeNum++ );
+    my $currNode;
+
+    #my $currNode = $treeObj;
+    #$pTree =~ s/^\((.*)\)$/$1/;
+
+    # Traverse the parenthetical tree
+    while ( $pTree =~ /([\(\),])([^\(\),]*)/g ) {
+        my ( $paren, $name ) = ( $1, $2 );
+        if ( $paren eq "(" ) {
+            if ( !defined($currNode) ) {
+                $currNode = $treeObj;
+            }
+            else {
+                my $newNode = newNode( $currNode, $nodeNum++ );
+                push( @{ $currNode->{"child"} }, $newNode );
+                $currNode = $newNode;
+            }
+        }
+        elsif ( $paren eq ")" ) {
+
+            # Calculate evo status of current node
+            my $singCount = 0;
+            my %spMem;
+            my $spDup = 0;    # number of species appear in more than 1 children
+            foreach my $ch ( @{ $currNode->{"child"} } ) {
+                $currNode->{"eStatus"} *= $ch->{"eStatus"};
+                #last if $currNode->{"eStatus"} == 0;    # nothing to check
+                $singCount++ if keys( %{ $ch->{"spMember"} } ) == 1;
+                foreach (@$spPrefix) {
+                    if ( exists( $ch->{"spMember"}->{$_} ) ) {
+                        if ( exists( $spMem{$_} ) ) {
+
+                            # Same species in more than one child
+                            #$currNode->{"eStatus"} = 0;
+                            #last;
+                            $spDup++;
+                            last if $spDup > 1;
+                        }
+                        else {
+                            $spMem{$_} = 1;
+                        }
+                    }
+                }
+                foreach (@$outPrefix) {
+                    last if $spDup > 1;
+                    if ( exists( $ch->{"spMember"}->{$_} ) ) {
+                        if ( exists( $spMem{$_} ) ) {
+                            
+                            # Outgroup in more than one child
+                            $spDup=2;
+                            last;
+                        }
+                        else {
+                            $spMem{$_} = 1;
+                        }
+                    }
+                }
+            }
+
+          # if more than 1 species present in all children, treat as duplication
+            $currNode->{"eStatus"} = 0 if $spDup > 1;
+            $currNode->{"aeStatus"} = 0 if $spDup > 1;
+
+            # Pure duplications if only one species
+            $currNode->{"eStatus"} = 1
+              if keys( %{ $currNode->{"spMember"} } ) == 1;
+
+            # Prevent species-specific genes from influencing orthology
+            $currNode->{"aeStatus"} = 0 if ($spDup == 1 & $singCount > 0);
+
+            my $parent = $currNode->{"parent"};
+
+            # Done if we are at root
+            last if !defined $parent;
+
+            # Propagate species members to parent
+            foreach (@$spPrefix) {
+                if ( defined( $currNode->{"spMember"}->{$_} ) ) {
+                    $parent->{"spMember"}->{$_} +=
+                      $currNode->{"spMember"}->{$_};
+                }
+            }
+
+            # Move up
+            $currNode = $parent;
+        }
+
+        if ( $name ne "" ) {
+
+            # Create leaf child (taxon) and add species member
+            my $newNode = newNode( $currNode, $nodeNum++, $name );
+            push( @{ $currNode->{"child"} }, $newNode );
+            my $spMember = $currNode->{"spMember"};
+            my $matched  = 0;
+            foreach (@$spPrefix) {
+                if ( $name =~ /^$_#/ ) {
+                    $spMember->{$_}++;    # Add taxon species to count
+                    $newNode->{"spMember"}->{$_} = 1;
+                    $matched = 1;
+                    last;
+                }
+            }
+            if ( !$matched ) {    # should not happen
+
+                # unknown species
+                warn "Unknown species ($name) encountered in tree!";
+                $spMember->{$unknownSp}++;
+                $newNode->{"spMember"}->{$unknownSp}++;
+            }
+        }
+    }
+    return $treeObj;
+}
+
+#
 # Create new tree node.  Returns pointer.
 #
 sub newNode {
@@ -159,7 +291,8 @@ sub newNode {
         child    => [],
         parent   => $parent,
         spMember => {},          # Taxa species of this node (clade)
-        eStatus  => 1    # Evolution status of node (pure dup/sp[1] or mix[0])
+        eStatus  => 1,    # Evolution status of node (pure dup/sp[1] or mix[0])
+        aeStatus => 1    # Evolution status for ancestral orthology
     );
     return \%node;
 
@@ -171,7 +304,7 @@ sub newNode {
 sub printNodes {
     my $treeObj = shift;
 
-    print "node #" . $treeObj->{"num"} . " [" . $treeObj->{"eStatus"} . "]";
+    print "node #" . $treeObj->{"num"} . " [" . $treeObj->{"eStatus"} . $treeObj->{"aeStatus"} . "]";
     while ( my ( $sp, $num ) = each( %{ $treeObj->{"spMember"} } ) ) {
         print " $sp: $num ";
     }
@@ -203,6 +336,43 @@ sub orthologGroups {
     else {
         foreach my $child ( @{ $treeNode->{"child"} } ) {
             my @groups = orthologGroups( $child, @orthSp );
+            push( @oGroups, @groups ) if @groups > 0;
+        }
+    }
+    return @oGroups;
+
+}
+
+#
+# Return list of hierarchical ortholog groups as list of list refs
+# Arguments are list of species of interests
+#
+sub hierOrthologGroups {
+    my $treeNode = shift;
+    my @orthSp   = @_;
+    my @oGroups  = ();
+
+    if ( $treeNode->{"eStatus"} ) {
+        my $spCount = 0;
+        foreach (@orthSp) {
+            $spCount++ if defined( $treeNode->{"spMember"}->{$_} );
+        }
+        my @group = ();
+        @group   = getLeaves( $treeNode, @orthSp ) if $spCount > 1;
+        @oGroups = ( \@group )                     if @group > 0;
+    }
+    elsif ( $treeNode->{"aeStatus"} ) {
+        my $spCount = 0;
+        foreach (@orthSp) {
+            $spCount++ if defined( $treeNode->{"spMember"}->{$_} );
+        }
+        my @group = ();
+        @group   = getLeaves( $treeNode, @orthSp ) if $spCount > 1;
+        @oGroups = ( \@group )                     if @group > 0;
+    }
+    else {
+        foreach my $child ( @{ $treeNode->{"child"} } ) {
+            my @groups = hierOrthologGroups( $child, @orthSp );
             push( @oGroups, @groups ) if @groups > 0;
         }
     }
