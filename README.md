@@ -42,11 +42,11 @@ or
 ```sh
 singularity pull phylogeneious.sif docker://vsondervan/phylogeneious
 ```
-If you wish to use local program installations, add any module load statements or PATH modifications to testdata/run.sh for easiest use.
+If you wish to use local program installations instead, add any `module load` statements or $PATH modifications to `testdata/run.sh` for easiest use.
 
 ## Run setup:
 
-To run the pipeline, the user can create a project folder by running  
+To run the pipeline, the user can create a project folder by running
 ```sh
 setup_rundir.sh -d <Path to directory containing named sequence files> 
 
