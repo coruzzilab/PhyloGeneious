@@ -1,0 +1,16 @@
+silent=console;
+silent=buffer;
+log brtemp.log;
+taxname=;
+taxname +85;
+nstates 32;
+p brtemp.nex;
+p brtemp.tre;
+ttags=;
+blen *;
+tsave* brtemp2.tre;
+save *;
+tsave /;
+log /;
+zzz;
+proc;
