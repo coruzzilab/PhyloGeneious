@@ -36,11 +36,11 @@ cd PhyloGeneious
 
 Perl and the DB_File module **must be installed on your system** and discoverable through your $PATH variable. The rest of these programs have been compiled into a docker image available [here](https://hub.docker.com/r/vsondervan/phylogeneious). To install, run 
 ```sh
-docker pull vsondervan/phylogeneious
+docker pull vsondervan/phylogeneious:02.2025
 ``` 
 or 
 ```sh
-singularity pull phylogeneious.sif docker://vsondervan/phylogeneious
+singularity pull phylogeneious.sif docker://vsondervan/phylogeneious:02.2025
 ```
 If you wish to use local program installations instead, add any `module load` statements or $PATH modifications to `testdata/run.sh` for easiest use.
 
