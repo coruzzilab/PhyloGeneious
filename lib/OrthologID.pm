@@ -746,8 +746,8 @@ sub allBlast {
     #    close FA;
     print "BLASTing .. $prefix\n";
     foreach my $sp ( @INGROUP, @OUTGROUP ) {
-        if ( !-d $OID_BLASTDIR/$sp ) {
-            mkdir $OID_BLASTDIR/$sp, 0755 or die "Cannot create $OID_BLASTDIR/$sp: $!";
+        if ( !-d $OID_BLASTDIR."/".$sp ) {
+            mkdir $OID_BLASTDIR."/".$sp, 0755 or die "Cannot create $OID_BLASTDIR/$sp: $!";
         }
         my $t = localtime;
         print "$t db sb $sp\n";
