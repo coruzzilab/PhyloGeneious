@@ -1,6 +1,5 @@
-export DATA=/scratch/$USER/testdata/PG20_data
-export OID_USER_DIR=/scratch/$USER/testdata
-export OID_HOME=~/bigplant_v4
+#!/bin/sh
+export DATA=$OID_USER_DIR/data
 
 
 readarray -t families < $OID_USER_DIR/FAMILY
