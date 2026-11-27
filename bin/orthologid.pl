@@ -43,11 +43,11 @@ use strict;
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
 
 sub HELP_MESSAGE() {
-    print "Usage: orthologid.pl -abBfOt [pattern]\n";
+    print "Usage: orthologid.pl -abBfOth [pattern]\n";
 }
 
-our ( $opt_b, $opt_B, $opt_f, $opt_a, $opt_t, $opt_O, $opt_s );
-getopts('abBfOts');
+our ( $opt_b, $opt_B, $opt_f, $opt_a, $opt_t, $opt_O, $opt_s, $opt_h );
+getopts('abBfOtsh');
 allBlast( $ARGV[0] )      if $opt_b;
 allBlast('*')             if $opt_B;
 makeFamily()              if $opt_f;
@@ -55,3 +55,4 @@ alignFamily( $ARGV[0] )   if $opt_a;
 makeTree( $ARGV[0] )      if $opt_t;
 findOrthologs( $ARGV[0] ) if $opt_O;
 schedatqs( $ARGV[0] )     if $opt_s; #make trees for all families
+HELP_MESSAGE()            if $opt_h;
