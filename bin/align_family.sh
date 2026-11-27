@@ -44,6 +44,7 @@ if [[ -s $OUTPUT ]]; then
 fi
 
 # Check MAFFT
+unset -f which
 if ! $ENV_WRAPPER which mafft >/dev/null 2>/dev/null; then
 	echo -u2 "MAFFT is not installed or not found."
 	exit 1
