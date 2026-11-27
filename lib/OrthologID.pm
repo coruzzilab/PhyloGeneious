@@ -593,77 +593,77 @@ sub allBlast {
 
             # now for change as described above - much more interleaved
             unlink $blastResDB;
-            ##    my $locus  = '';
-            ##    my $target = '';
-            ##    my $count  = 0;
+                my $locus  = '';
+                my $target = '';
+                my $count  = 0;
                 my $ct     = 0;
     
             print "$ct Combining BLAST and length results\n";
             
-            my $status = system("bash $OID_HOME/bin/makeblastresdb.sh $outputDir $blastResDB");
-                die "BLAST results DB error: $?" unless $status == 0;
+            #my $status = system("bash $OID_HOME/bin/makeblastresdb.sh $outputDir $blastResDB");
+            #    die "BLAST results DB error: $?" unless $status == 0;
             
-            ##foreach my $sp ( @INGROUP, @OUTGROUP ) {
-            ##    open FA, ">>$blastResDB"
-            ##    or die "cannot open blastresdb $blastResDB\n"; #$sp"."_"."$blastResDB
-            ##
-            ##    #            $geneLen{$geneid} = length($genSeq) if ($geneid);
-            ##    #            my %allRes;
-            ##    #            my %allLen;
-            ##
-            ##    print "$ct Combining BLAST and length results for $sp\n";
-            ##    #        foreach my $sp (@INGROUP, @OUTGROUP) {
-            ##    for ( my $part = 1 ; $part <= $Parts ; $part++ )
-            ##    {    # each part has a unique set of source genes
-            ##        $ct       = localtime;
-            ##        %blastRes = ();
-            ##        print "$ct Combining BLAST and length results for $part\n"
-            ##        if $verbose;
-            ##        $| = 1;    # flush STDOUT
-            ##
-        #   ##                for(my $part=1;$part<=$Parts;$part++){ #$sp (@INGROUP, @OUTGROUP)
-#           ##         foreach my $sp ( @INGROUP, @OUTGROUP ) {
-            ##
-            ##    #                my %spGeneLen;
-            ##    #                my $spBlastResDB = "$OID_BLASTDIR/Part$part" . "_blastres.dbm";
-            ##            my $spblstfl = "$OID_BLASTDIR/$sp/$sp.Part$part.blst";
-            ##            if ( !-f $spblstfl ) {
-            ##                print STDERR
-            ##                "Blast results for $sp.Part$part not found!\n";
-            ##                next;
-            ##            }
-            ##            open FH, "$spblstfl"
-            ##            or print "blast failed for $spblstfl\n";
-            ##            my $oldlocus = '';
-            ##            my %tseen    = ();
-            ##            while (<FH>) {
-            ##                my @stuff = split;
-            ##                $target = $stuff[1];    #target gene
-            ##                $locus  = $stuff[0];
-            ##                if ( $locus ne $oldlocus ) {
-            ##                    %tseen            = ();
-            ##                    $oldlocus         = $locus;
-            ##                    $blastRes{$locus} = ""
-            ##                    if !defined $blastRes{$locus};
-            ##                }
-            ##                next if defined $tseen{$target};
-            ##                $blastRes{$locus} .= $_;
-            ##                $blastRes{$locus} =~ s/[^A-z0-9\_\.\-\#\>\|]+//;
-            ##                $tseen{$target} = 1;
-            ##
-            ##                #                    $spBlastRes{$locus} .= $_;
-            ##            }
-            ##            close FH;
-#           ##         }
-            ##        foreach $locus ( keys %blastRes ) {
-            ##            print FA ">$locus\n$blastRes{$locus}"
-            ##            ;    #i think there are imbeded c/r
-            ##            $count++;
-            ##        }
-            ##    }
-            ##    close FA;
-            ##    #system("cat -v $sp"."_"."$blastResDB >> $blastResDB");
-            ##}
+            foreach my $sp ( @INGROUP, @OUTGROUP ) {
+                open FA, ">>$blastResDB"
+                or die "cannot open blastresdb $blastResDB\n"; #$sp"."_"."$blastResDB
+            
+                #            $geneLen{$geneid} = length($genSeq) if ($geneid);
+                #            my %allRes;
+                #            my %allLen;
+            
+                print "$ct Combining BLAST and length results for $sp\n";
+                #        foreach my $sp (@INGROUP, @OUTGROUP) {
+                for ( my $part = 1 ; $part <= $Parts ; $part++ )
+                {    # each part has a unique set of source genes
+                    $ct       = localtime;
+                    %blastRes = ();
+                    print "$ct Combining BLAST and length results for $part\n"
+                    if $verbose;
+                    $| = 1;    # flush STDOUT
+            
+        #                   for(my $part=1;$part<=$Parts;$part++){ #$sp (@INGROUP, @OUTGROUP)
+#                    foreach my $sp ( @INGROUP, @OUTGROUP ) {
+            
+                #                my %spGeneLen;
+                #                my $spBlastResDB = "$OID_BLASTDIR/Part$part" . "_blastres.dbm";
+                        my $spblstfl = "$OID_BLASTDIR/$sp/$sp.Part$part.blst";
+                        if ( !-f $spblstfl ) {
+                            print STDERR
+                            "Blast results for $sp.Part$part not found!\n";
+                            next;
+                        }
+                        open FH, "$spblstfl"
+                        or print "blast failed for $spblstfl\n";
+                        my $oldlocus = '';
+                        my %tseen    = ();
+                        while (<FH>) {
+                            my @stuff = split;
+                            $target = $stuff[1];    #target gene
+                            $locus  = $stuff[0];
+                            if ( $locus ne $oldlocus ) {
+                                %tseen            = ();
+                                $oldlocus         = $locus;
+                                $blastRes{$locus} = ""
+                                if !defined $blastRes{$locus};
+                            }
+                            next if defined $tseen{$target};
+                            $blastRes{$locus} .= $_;
+                            $blastRes{$locus} =~ s/[^A-z0-9\_\.\-\#\>\| \t\n]+//;
+                            $tseen{$target} = 1;
+            
+                            #                    $spBlastRes{$locus} .= $_;
+                        }
+                        close FH;
+#                    }
+                    foreach $locus ( keys %blastRes ) {
+                        print FA ">$locus\n$blastRes{$locus}"
+                        ;    #i think there are imbeded c/r
+                        $count++;
+                    }
+                }
+                close FA;
+                #system("cat -v $sp"."_"."$blastResDB >> $blastResDB");
+            }
             $ct = localtime;
             print "$ct completed blastres merge for $Parts files\n"; #$count
 
@@ -831,7 +831,7 @@ sub rdblastrs {    #pass ref to %blastRes and %geneLen
     open FA, "$blastResDB" or die "cannot open blastresdb $blastResDB\n";
     my $locus = "";
     while (<FA>) {
-        next if (/\s+\n/);
+        next if (/\s+/);
         if (/^>/) {
             if ($locus) {
                 $count++;
@@ -963,7 +963,7 @@ sub mclmcx() {
         my @blastOutput = ();                                             #empty
         my $g           = nextblst( $blfa, \@blastOutput, \$lastgene );
         last if !$g;
-        $g =~ s/[^A-z0-9\_\.\-\#\>]+//;
+        #$g =~ s/[^[:ascii:]]//g;
         my %seen;
         my $seqLen = $geneLen{$g};
         if ( !$seqLen ) {
@@ -1073,7 +1073,7 @@ sub mclCluster() {
             my @blastOutput = ();        #empty
             my $g           = nextblst( $blfa, \@blastOutput, \$lastgene );
             last if !$g;
-            $g =~ s/[^A-z0-9\_\.\-\#\>]+//;
+            #$g =~ s/[^[:ascii:]]//g;
             my %seen;
             my $seqLen = $geneLen{$g};
             if ( !$seqLen ) {
@@ -1156,7 +1156,7 @@ sub make1fam {    # makes a single family
     my $status;
 
 #    my $FASTACMD = defined($BLAST_HOME) ? "$BLAST_HOME/bin/fastacmd" : "fastacmd";
-    my $FASTACMD = "blastdbcmd";
+    my $FASTACMD = "$ENV_WRAPPER blastdbcmd";
 
     my $seq;
     my @out;
@@ -1202,7 +1202,7 @@ sub makeFamily() {
     my $status;
 
 #    my $FASTACMD = defined($BLAST_HOME) ? "$BLAST_HOME/bin/fastacmd" : "fastacmd";
-    my $FASTACMD = "blastdbcmd";
+    my $FASTACMD = "$ENV_WRAPPER blastdbcmd";
 
     # Clustering
     setglsttm();
@@ -1213,10 +1213,13 @@ sub makeFamily() {
     }
 
     # Output gene families
+    if ( ! -s $clustersFile) { 
+        die "No clusters in $clustersFile !\n"; 
+    }
     open MFH, $clustersFile or die "Cannot open $clustersFile: $!\n";
 
     open SFH, ">>$singletFile"
-      or die "Create open $singletFile for writing: $!\n";
+      or die "Cannot open $singletFile for writing: $!\n";
 
     while (<MFH>) {
         chomp;
@@ -2580,9 +2583,7 @@ sub findOrthologs($) {
     my $thisFunc     = ( caller(0) )[3];
     my $treeFile     = "oid.tre";
     my $orthologFile = "orthologs";
-    if ( $CALLBYOUTGROUP ) {
-        $orthologFile = "hierorthologs"
-    }
+    my $horthologFile = "hierorthologs";
 
     # Change to data dir
     my $savDir = getcwd;
@@ -2607,7 +2608,7 @@ sub findOrthologs($) {
         chdir $dir
           or die "$thisFunc: failed to change to family directory $dir: $!\n";
 
-        if ( !-f $treeFile || -f $orthologFile ) {
+        if ( !-f $treeFile || ( -f $orthologFile && !$CALLBYOUTGROUP ) || ( -f $orthologFile && -f $horthologFile ) ) {
             chdir $OID_DATADIR;
             next;
         }
@@ -2615,22 +2616,32 @@ sub findOrthologs($) {
         #my $parenTree = (untranslateTree($treeFile))[0];
         my $parenTree = ( parentheticalTree($treeFile) )[0];
         my @orthGroups;
-        if ( $CALLBYOUTGROUP ) { #change to hierarchical
-            my $phyTree =
-              new OrthologID::PhyloTree( $parenTree, [ ( @INGROUP, @OUTGROUP ) ], [ ( @OUTGROUP ) ] );
+        my $phyTree =
+          new OrthologID::PhyloTree( $parenTree, [ ( @INGROUP, @OUTGROUP ) ], [ ( @OUTGROUP ) ] );
+
+        if ( $CALLBYOUTGROUP && !-f $horthologFile ) { #build hierarchical groups
             @orthGroups = $phyTree->hierOrthologGroups( @INGROUP, @OUTGROUP );
-        } else {
-            my $phyTree =
-              new OrthologID::PhyloTree( $parenTree, [ ( @INGROUP, @OUTGROUP ) ] );
+            open FH, ">$horthologFile"
+              or die "$thisFunc: failed to open ortholog file for writing: $!\n";
+            foreach my $gp (@orthGroups) {
+                my @g = @$gp;
+                print FH "@g\n";
+            }
+            close FH;
+        }
+
+        if ( !-f $orthologFile ) {
+            #my $phyTree =
+            #  new OrthologID::PhyloTree( $parenTree, [ ( @INGROUP, @OUTGROUP ) ] );
             @orthGroups = $phyTree->orthologGroups( @INGROUP, @OUTGROUP );
+            open FH, ">$orthologFile"
+              or die "$thisFunc: failed to open ortholog file for writing: $!\n";
+            foreach my $gp (@orthGroups) {
+                my @g = @$gp;
+                print FH "@g\n";
+            }
+            close FH;
         }
-        open FH, ">$orthologFile"
-          or die "$thisFunc: failed to open ortholog file for writing: $!\n";
-        foreach my $gp (@orthGroups) {
-            my @g = @$gp;
-            print FH "@g\n";
-        }
-        close FH;
         chdir $OID_DATADIR;
 
     }
