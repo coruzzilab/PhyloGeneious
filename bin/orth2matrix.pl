@@ -50,12 +50,14 @@ my $minNonMissingTaxa = 2;
 my %excludeTaxon;    # Exclude taxon (key) if defined
 my $needOutgroup
   ;    # At least one outgroup must be present in each partition if defined
+my $CALLBYOUTGROUP = 0;
 my $MatrixFile             = "$OID_USER_DIR/Matrix.nex";
 my $TNTMatrixFile          = "$OID_USER_DIR/Matrix.tnt";
 my $LikelihoodMatrixFile   = "$OID_USER_DIR/Matrix.phy";
 my $PartitionFile          = "$OID_USER_DIR/partitions.txt";
 my $PartitionMembers       = "$OID_USER_DIR/partitionMembers.txt";
 my $PartitionMembersUnfilt = "$OID_USER_DIR/partitionMembers_paralogs.txt";
+my $HOGMembersUnfilt = "$OID_USER_DIR/HOGMembers.txt";
 my $alignedFile            = "FAMILY.aligned";
 my %PhylipMat;    # Holds the phylip matrix for RAxML
 my $pnames;       #List of partition names
@@ -83,6 +85,21 @@ if ($opt_x) {
         print "Excluding $_ from matrix\n";
     }
 }
+
+my $OID_CONF       = "$OID_USER_DIR/config";
+die "OrthologID config file not found!\n" if !-r $OID_CONF;
+
+open CONF_FH, "$OID_CONF" or die "Cannot open $OID_CONF: $!\n";
+    while (<CONF_FH>) {
+        chomp;
+        next if (/^#/);
+        if (/^\s*CALLBYOUTGROUP\s*=\s*(.+?)\s*$/) {   # orthology call method
+            $CALLBYOUTGROUP = $1;
+        }
+    }
+close CONF_FH;
+
+print "HOG setting is $CALLBYOUTGROUP\n";
 
 # Check if matrix.nex already exists
 die "\"$MatrixFile\" already exists ... will not overwrite\n" if -f $MatrixFile;
@@ -114,11 +131,13 @@ foreach (@OUTGROUP) {
 }
 my @ogroup = ();    # list of hashes of alignments
 my @oanno  = ();    # list of annotations
+my @hanno = ();
 
 my $savDir      = getcwd;
 my $OID_DATADIR = "$OID_USER_DIR/data";
 chdir $OID_DATADIR;
 my $ogNum = 1;
+my $hogNum = 1;
 my @fams = sort { $a <=> $b } <[0-9]*>;
 foreach my $dir (@fams) {    #(<[1-9]*>) {
 
@@ -132,6 +151,7 @@ foreach my $dir (@fams) {    #(<[1-9]*>) {
     open OFH, "$dir/orthologs"
       or die "Cannot open orthologs file in \"$dir\": $!\n";
     my @globalOutgroup    = ();
+    my @hogOutgroup    = ();
     my %globalOutgroupSeq = ();
     my $totGene           = 0;
     while (<OFH>) {
@@ -243,6 +263,112 @@ foreach my $dir (@fams) {    #(<[1-9]*>) {
     }
 
     close OFH;
+
+    if ( $CALLBYOUTGROUP ) {
+        next if !-r "$dir/hierorthologs";
+        $hasOutgroup = 0;
+	    
+        # Determine if there is a global set of outgroup orthologs
+        open OFH, "$dir/hierorthologs"
+          or die "Cannot open HOGs file in \"$dir\": $!\n";
+        while (<OFH>) {
+            chomp;
+            my @olist = split;
+            my @taxlist = map { /^[^#]*/; $& } @olist;
+            $totGene += @olist;
+            my $allOutgroup = 1;    # only outgroup in this set
+            my $allIngroup  = 1;    # only ingroup in this set
+            my %seq;
+            foreach my $gene (@olist) {
+	    
+                $gene =~ /#/;
+                my $sp = $`;
+	    
+                if ( $isOutgroup{$sp} ) {
+                    $allIngroup = 0;
+                }
+                else {
+                    $allOutgroup = 0;
+                }
+            }
+            if ( !$allIngroup && !$allOutgroup ) {
+	    
+                # do not use global outgroup
+                @hogOutgroup = ();
+                last;
+            }
+            if ( $allOutgroup && @olist > @hogOutgroup ) {  # pick the bigger set
+                @hogOutgroup    = @olist;
+            }
+        }
+        close OFH;
+        if ( !@hogOutgroup ) {
+	    
+            @hogOutgroup = ();
+        }
+	    
+        open OFH, "$dir/hierorthologs"
+          or die "Cannot open HOGs file in \"$dir\": $!\n";
+        while (<OFH>) {
+            chomp;
+            my @olist = split;
+            my @taxlist = map { /^[^#]*/; $& } @olist;
+            print "HOG set = { @taxlist }\n";
+            my %numSp = ();
+            my $numIngroup  = 0;    # number of ingroup taxa
+            my $allOutgroup = 1;    # only outgroup in this set
+	    
+            foreach my $gene (@olist) {
+	    
+                $gene =~ /#/;
+                my $sp     = $`;
+                my $geneID = $';
+	    
+                $numSp{$sp}++ if $taxa{$sp};
+                if ( $numSp{$sp} == 1 && !$isOutgroup{$sp} ) {
+	    
+                    # first encounter of this ingroup taxon - increment
+                    $numIngroup++;
+                }
+	    
+                if ( $isOutgroup{$sp} ) {
+                    $hasOutgroup = 1;
+                }
+                else {
+                    $allOutgroup = 0;
+                }
+            }
+	    
+            # count no. species in global outgroup
+            my $numSpGlobalOutgroup = 0;
+            my %numSpGOG;
+            foreach my $gene (@hogOutgroup) {
+                $gene =~ /#/;
+                $numSpGOG{$`}++;
+            }
+	    
+            #		if ($allOutgroup && @hogOutgroup > 0 ||
+            #			keys(%numSp) + keys(%numSpGOG) < $minNonMissingTaxa ||
+            #			$needOutgroup && ! $hasOutgroup) {
+            if (   $numIngroup < $minNonMissingTaxa
+                || $needOutgroup && !$hasOutgroup )
+            {
+                print " ...skipped\n";
+            }
+            else {
+                # store partition and annotation
+                if (@hogOutgroup) {
+                    print " +global outgroup\n";
+                    push( @olist, @hogOutgroup );
+                }
+                push( @hanno,  "HOG$hogNum|Family$dir|@olist" );
+                #print "HOG$hogNum: @olist\n";
+                $hogNum++;
+            }
+        }
+
+    close OFH;
+	}
 }
 
 chdir $savDir;
@@ -279,6 +405,11 @@ open PSET, ">$PartitionMembers"
 open PFSET, ">$PartitionMembersUnfilt"
   or die
   "Cannot open file for writing full partition membership information: $!\n";
+if ( $CALLBYOUTGROUP ) {
+    open HSET, ">$HOGMembersUnfilt"
+      or die
+      "Cannot open file for writing HOG membership information: $!\n";
+}
 
 print TNT "nstates 32;\ntaxonomy=;\nsilent = buffer ;\nxread\n";
 my @mat = split /\n/, $matrix;
@@ -366,6 +497,23 @@ close PHY;
 close PSET;
 close PFSET;
 close PART;
+
+if ( $CALLBYOUTGROUP ) {
+my $hMembers;
+foreach my $anno (@hanno) {
+        $hMembers = "";
+        my @GeneSet = ( split /\s/, ( split /\|/, $anno )[2] );
+        foreach my $gene (@GeneSet) {
+            my ( $taxon, $geneID ) = split /#/, $gene;
+            $hMembers .= "$taxon#$geneID ";
+        }
+        my $partNumber = ( split /\|/, $anno )[0];
+        my $FamNumber  = ( split /\|/, $anno )[1];
+        print HSET $partNumber, " = $hMembers\t$FamNumber\n";
+        next;
+}
+close HSET;
+}
 
 sub code {
     my @lines     = split( /\n/, $_[0] );
