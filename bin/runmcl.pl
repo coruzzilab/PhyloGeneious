@@ -326,7 +326,9 @@ $needmem = 1  if ( $needmem < 1 );
 $needtm  = 1  if ( $needtm < 1 );
 $sleeptm = 30 if $gb < 3;                      # small blast quick run
 
-while ( !-f $mcxdone ) {    # need to do mcxload
+my $tries = 0;
+#while ( !-f $mcxdone ) {    # need to do mcxload
+while ( $tries < 5 ) {    # need to do mcxload
     my $tmnw = time();
     my $td   = $tmnw - $strtm;
     if ( $memavail >= $needmem and ( ( $td + $needtm ) < 72000 ) ) {
@@ -335,7 +337,7 @@ while ( !-f $mcxdone ) {    # need to do mcxload
         mclmcx();
     }
     else {
-        print "need to scedule mcxload\n";
+        print "need to schedule mcxload\n";
         my @args;
         my $wl = int( ( $gb + 24 ) / 25 );
         $wl     = 8 if ( $wl < 8 );
@@ -347,8 +349,15 @@ while ( !-f $mcxdone ) {    # need to do mcxload
         }
         $bldone = waitqs( \%qsid );
     }
+    $tries=$tries+1;
+    if ( $tries == 5 and !-f $mcxdone ) {
+        print "mcxload failed";
+        exit 1;
+    }
 }
-while ( !-f $familydone ) {
+$tries = 0;
+#while ( !-f $familydone ) {
+while ( $tries < 5 ) {
     my $needmem = $nthr * $OID_MCL;
     my $wl      = 3;                 #shoud be  < 2 hrs
     my @args;
@@ -362,6 +371,11 @@ while ( !-f $familydone ) {
         }
     }
     $bldone = waitqs( \%qsid );
+    $tries=$tries+1;
+    if ( $tries == 5 and !-f $familydone ) {
+        print "build fams failed";
+        exit 1;
+    }
 }
 my $tm = localtime;
 print "$tm runmcl done\n";
