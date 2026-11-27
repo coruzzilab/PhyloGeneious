@@ -152,10 +152,12 @@ fi
 if [[ ! -s $OID_USER_DIR/blast/blastres.blst ]]; then
 	cp $OID_USER_DIR/blastdb/combined.fa $OID_USER_DIR/blast
 
-	$OID_HOME/bin/new_blast_parts.pl #make partn.faa (pgm estimates size #$ENV_WRAPPER 
+	$OID_HOME/bin/new_blast_parts.pl #make partn.faa (pgm estimates size #$ENV_WRAPPER
+	[[ $? > 0 ]] && exit 1; 
 	#        NPART = $(/bina/ls OID_USER_DIR/blast/*.* | grep -c ".faa")
 	touch $OID_USER_DIR/blast/.Parts.done
 	$OID_HOME/bin/qsblast.pl -g 4 -n 12 -w 12 -q $MAXQS #$ENV_WRAPPER # -g 16
+	[[ $? > 0 ]] && exit 1;
 	#fi
 	#echo 'proc finished'
 	if ! [[ -s $OID_USER_DIR/blast/blastres.blst && -s $OID_USER_DIR/blast/genelen.blst ]]; then
@@ -164,8 +166,10 @@ if [[ ! -s $OID_USER_DIR/blast/blastres.blst ]]; then
 	else
 		echo "Archiving part files...";
 		E=0; while [[ $E -lt 1 ]]; do
-			tar -czf $OID_USER_DIR/blast/Parts.tar.gz $OID_USER_DIR/blast/Part[0-9]* --remove-files;
-			tar -czf $OID_USER_DIR/blast/speciesParts.tar.gz $OID_USER_DIR/blast/[A-z]*Part[0-9]* --remove-files;
+			cd $OID_USER_DIR/blast
+			tar -czf $OID_USER_DIR/blast/Parts.tar.gz Part[0-9]* --remove-files;
+			tar -czf $OID_USER_DIR/blast/speciesParts.tar.gz */*Part[0-9]* --remove-files;
+			cd $OID_USER_DIR
 			echo "Archiving complete!";
 			E=1;
 		done &
@@ -203,6 +207,7 @@ fi
 echo "running new job select"
 ## new job to grep all data subdir for Family size
 $OID_HOME/bin/rdfamdb.pl #$ENV_WRAPPER 
+[[ $? > 0 ]] && exit 1;
 echo "Archiving small clusters..."
 E=0; while [[ $E -lt 1 ]]; do
 	tar -xzf $OID_USER_DIR/data/small_clusters.tar.gz $OID_USER_DIR/data/S[1-9]* --remove-files
@@ -212,6 +217,7 @@ done &
 rm log/job/schedone
 while [[ ! -f log/job/schedone ]]; do
 	$OID_HOME/bin/orthologid.pl -s 'hello' #$ENV_WRAPPER 
+	[[ $? > 0 ]] && exit 1;
 	if [[ ! -f log/job/schedone ]]; then
 		echo "orthologid.pl -s aborted before finish"
 		date
@@ -222,6 +228,7 @@ time
 # Extract orthologs
 echo "Extracting orthologs ..."
 $OID_BIN/orthologid.pl -O #$ENV_WRAPPER 
+[[ $? > 0 ]] && exit 1;
 date
 time
 
@@ -233,6 +240,7 @@ if [[ $RERUN == 1 ]]; then
 	# Extract orthologs again
 	echo "Extracting skipped orthologs ..."
 	$OID_BIN/orthologid.pl -O #$ENV_WRAPPER 
+	[[ $? > 0 ]] && exit 1;
 	date
 	time
 fi
@@ -241,6 +249,7 @@ fi
 echo 'Generating matrix ...'
 if [[ ${#INGROUP[@]} -lt 100 ]]; then
 $OID_BIN/orth2matrix.pl #$ENV_WRAPPER 
+[[ $? > 0 ]] && exit 1;
 else
 LOG=`sbatch --mem=45GB --time=04:00:00 --wrap="$OID_BIN/orth2matrix.pl"`
 echo "start qsid matrixjob ${LOG}"
