@@ -35,14 +35,14 @@ while getopts 'a:d:s:o:fh-:' opt; do
         docker)
           IMAGE=1
           image_path="$(echo $OPTARG |cut -d"=" -f2)"
-          if [[ $image_path == "" ]]; then echo "Error: Image name/path not specified"; exit 1; fi
+          if [[ $image_path == "" || $image_path == "docker" ]]; then echo "Error: Image name not specified"; exit 1; fi
           ;;
 
         singularity)
           IMAGE=2
           image_path="$(echo $OPTARG |cut -d"=" -f2)"
-          if [[ $image_path == "" ]]; then echo "Error: Image name/path not specified"; exit 1; fi
-          if [[ "${image_path::1}" != "/" ]]; then
+          if [[ $image_path == "" || $image_path == "singularity" ]]; then echo "Error: Image name/path not specified"; exit 1; fi
+		  if [[ "${image_path::1}" != "/" && "${image_path::1}" != "~" ]]; then
             image_path="$PATHTOA/$image_path"
           fi
           if [[ "${image_path: -1}" == "/" ]]; then
@@ -56,7 +56,7 @@ while getopts 'a:d:s:o:fh-:' opt; do
           echo "$(basename $0) -d PATH/TO/SEQUENCE_FILES [-a RUN_DIR_ALIAS -s SPECIESFILE -o OUTGROUP -f --docker=IMAGE_NAME --singularity=PATH/TO/IMAGE]"
           echo
           echo "A script for auto-building a PhyloGeneious run directory."
-          echo -e "-d\tPath to directory containing sequence files \n-a\tName to give run directory [default: PGrun]\n-s\tTab-delimited file where first column contains the species \n\tidentifiers used in the sequence files and second column contains the \n\tspecies names\n-o\tList of outgroup species identifiers [ie. \"Species1 Species2 Species3\"]\n-f\tForce overwrite of run directory\n--docker\tUse provided docker image as run enviroment\n--singularity\tUse provided singularity image as run enviroment\n-h\tDisplay help\n"
+          echo -e "-d\tPath to directory containing sequence files \n-a\tName to give run directory [default: PGrun]\n-s\tTab-delimited file where first column contains the species \n\tidentifiers used in the sequence files and second column contains the \n\tspecies names\n-o\tList of outgroup species identifiers [ie. \"Species1 Species2 Species3\"]\n-f\tForce overwrite of run directory\n--docker=\tUse provided docker image as run enviroment\n--singularity=\tUse provided singularity image as run enviroment\n-h\tDisplay help\n"
           echo "Note: Sequence IDs should contain the species identifier (eg. >SpeciesID#GeneID) and sequence files names should only contain the species identifier (eg. SpeciesID.faa)"
           exit 1
           ;;
@@ -68,7 +68,7 @@ while getopts 'a:d:s:o:fh-:' opt; do
       echo "$(basename $0) -d PATH/TO/SEQUENCE_FILES [-a RUN_DIR_ALIAS -s SPECIESFILE -o OUTGROUP -f --docker=IMAGE_NAME --singularity=PATH/TO/IMAGE]"
       echo
       echo "A script for auto-building a PhyloGeneious run directory."
-      echo -e "-d\tPath to directory containing sequence files \n-a\tName to give run directory [default: PGrun]\n-s\tTab-delimited file where first column contains the species \n\tidentifiers used in the sequence files and second column contains the \n\tspecies names\n-o\tList of outgroup species identifiers [ie. \"Species1 Species2 Species3\"]\n-f\tForce overwrite of run directory\n--docker\tUse provided docker image as run enviroment\n--singularity\tUse provided singularity image as run enviroment\n-h\tDisplay help\n"
+      echo -e "-d\tPath to directory containing sequence files \n-a\tName to give run directory [default: PGrun]\n-s\tTab-delimited file where first column contains the species \n\tidentifiers used in the sequence files and second column contains the \n\tspecies names\n-o\tList of outgroup species identifiers [ie. \"Species1 Species2 Species3\"]\n-f\tForce overwrite of run directory\n--docker=\tUse provided docker image as run enviroment\n--singularity=\tUse provided singularity image as run enviroment\n-h\tDisplay help\n"
       echo "Note: Sequence IDs should contain the species identifier (eg. >SpeciesID#GeneID) and sequence files names should only contain the species identifier (eg. SpeciesID.faa)"
       exit 1
       ;;
@@ -142,7 +142,7 @@ else
         echo "Error: Species identifiers missing from sequence IDs in the following files: please fix before running PhyloGeneious"
         cat filecheck.temp | cut -d":" -f1 
     fi
-    grep -c "\*." $ALIAS/blastdb/* | sed "s|$ALIAS/blastdb/||" > filecheck.temp
+    grep -c "^[^>]*[\*\.]." $ALIAS/blastdb/* | sed "s|$ALIAS/blastdb/||" > filecheck.temp
     COUNT=`cat filecheck.temp | awk -F":" '{sum+=$2;} END{print sum;}'`
     if [[ $COUNT -gt 0 ]]; then
         echo "Warning: internal stop codons found in the following sequence files:"
@@ -193,7 +193,7 @@ elif [[ ${#SPECIESFILE} -eq 0 && ${#OUTGROUP} -eq 0 ]]; then
 else
     echo "Warning: no species file provided with outgroup identifier; additional species identifiers will be inferred from input file names."
     TEMP=`echo $OUTGROUP | sed "s/ /\\\\\\|/g"`
-    INGROUP=`ls $ALIAS/blastdb | grep -v "${TEMP}" | rev |cut -d"." -f2-|rev|sort -u|tr "\n" " "`
+    INGROUP=`ls $ALIAS/blastdb | grep -v "${TEMP}" | rev |cut -d"." -f2-|rev|grep -v "[^A-Za-z]cds\."|sort -u|tr "\n" " "`
     echo $INGROUP | grep -q '[^A-Za-z0-9#._ ]\|-'
     if [[ $? -eq 0 ]]; then
         echo "Error: Illegal characters in species identifiers."
