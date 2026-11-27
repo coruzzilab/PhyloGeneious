@@ -54,11 +54,16 @@ if [[ $TREEPROG == "TNT" ]]; then
 			cd $FAMILYDIR
 			while [ ! -f ${FAMILYDIR}oid.tre ]; do
 				SLACKVAL=$(($(grep "Increase slack" ${FAMILYDIR}oid.log|tail -n1|cut -d" " -f6)+10))
+				if [[ $SLACKVAL -gt 1000 ]]; then SLACKVAL=1000;fi
 				sed -i "s/slack [0-9]*/slack ${SLACKVAL}/g" ${FAMILYDIR}oid.proc
 				$ENV_WRAPPER tnt 'silent=console;silent=buffer;p oid.proc;zzz' &> $OID_USER_DIR/log/treefix.log
 				echo ""
+				if [[ $SLACKVAL -ge 1000 && ! -f ${FAMILYDIR}oid.tre ]]; then
+					echo "${FAMILYDIR} slack too large; tree build failed"
+					break 
+				fi
 			done
-			echo "built tree for ${FAMILYDIR}"
+			if [ -f ${FAMILYDIR}oid.tre ]; then echo "built tree for ${FAMILYDIR}"; fi
 		elif [[ $( grep "out of ram" ${FAMILYDIR}*log | tail -n1|wc -c) -gt 0 ]]; then
 			echo "Family in ${FAMILYDIR} is too large: skipping for orthology"
 		#	cd $FAMILYDIR
@@ -71,6 +76,24 @@ if [[ $TREEPROG == "TNT" ]]; then
 		else
 			echo "Unknown tree building error for ${FAMILYDIR}: will attempt to rebuild"
 			cd $FAMILYDIR
+			if [[ ! -s ${FAMILYDIR}oid.nex ]]; then
+				echo "oid.nex not found for ${FAMILYDIR}: creating"
+				FAM=`echo $FAMILYDIR|sed "s|.*/\([0-9]*\)$|\1|g"`
+				if [[ $HPC == "S" ]]; then
+					bash $OID_HOME/bin/run_mafftS.sh $FAM 2
+				else
+					bash $OID_HOME/bin/run_mafftP.sh $FAM 2
+				fi
+				if [[ ! -s ${FAMILYDIR}oid.nex ]]; then
+					$OID_HOME/bin/makenex.pl $FAM
+					if [[ ! -s ${FAMILYDIR}oid.nex ]]; then echo "oid.nex for ${FAMILYDIR} failed: skipping for orthology"; fi
+				fi
+			fi
+			if [[ $(ls ${FAMILYDIR}*proc|wc -l) == 0 ]]; then
+				echo "procfiles not found for ${FAMILYDIR}: creating"
+				
+				if [[ $(ls ${FAMILYDIR}*proc|wc -l) == 0 ]]; then echo "procfiles for ${FAMILYDIR} failed: skipping for orthology"; fi
+			fi
 			if [[ $(grep -c "drift" ${FAMILYDIR}oid.proc) -gt 0 ]]; then
 				JOBFAMS+=(${FAMILYDIR})
 				LOG=`runtreejob`
@@ -87,6 +110,11 @@ if [[ $TREEPROG == "TNT" ]]; then
 				fi
 			fi
 		fi
+	done
+elif [[ $TREEPROG == "OBLONG" ]]; then
+	for FAMILYDIR in `comm -23 <(ls $OID_USER_DIR/data/*/FAMILY | grep -v "S" | sed "s/FAMILY//g"| sort) <(ls $OID_USER_DIR/data/*/oid.tre | grep -v "S" | sed "s/oid.tre//g" | sort)`; do #get fams with missing trees
+		echo "Unknown tree building error for ${FAMILYDIR}"
+		if [[ ! -s ${FAMILYDIR}oid.nex ]]; then echo "oid.nex not found for ${FAMILYDIR}"; fi
 	done
 fi
 
