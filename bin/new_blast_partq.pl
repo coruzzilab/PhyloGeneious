@@ -30,7 +30,7 @@ my @stuff = ();
 my $strt;
 my $outsfx = 1;
 print "local time $t\n";
-my $dummypart = 1000 + $outsfx;
+my $dummypart = "000" . $outsfx;
 my $parts     = 0;
 my $ptsz      = 0;
 my $ptrec     = 0;
@@ -114,7 +114,7 @@ $parts = ceil( $parts / $runs );
 $ptsz  = ceil( $ptsz / $runs );
 $ptrec = ceil( $ptrec / $runs );
 $ptdif = $ptdif / $runs;
-print "we will use part $parts size $ptsz (recs ~ $ptrec, time $ptdif)\n";
+print "we will try part $parts size $ptsz (recs ~ $ptrec, time $ptdif)\n";
 open( FA, "$comb" ) or die "could not find $comb\n";
 my $curfa = '';    #needed between parts
 my @fatxt = ();
