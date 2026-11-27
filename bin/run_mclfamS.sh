@@ -6,7 +6,7 @@
 
 echo hello for runmclfam
 OID_DATA=$OID_USER_DIR/data
-MYSTART=.$SLURM_JOB_ID.start
+MYSTART=$OID_USER_DIR/log/.$SLURM_JOB_ID.start
 date +%s >$MYSTART
 echo runmclfam.pl >>$MYSTART
 

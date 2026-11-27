@@ -5,7 +5,7 @@
 #SBATCH -o log/job/pooltnt.%J.out
 
 cd $OID_USER_DIR
-MYSTART=.$SLURM_JOB_ID.start
+MYSTART=$OID_USER_DIR/log/.$SLURM_JOB_ID.start
 date +%s >$MYSTART
 echo pooltnt.pl $1 $2 $3 >>$MYSTART
 date

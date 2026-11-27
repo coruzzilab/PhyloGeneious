@@ -14,7 +14,7 @@
 echo hello for runmcx
 cd $OID_USER_DIR
 OID_DATA=$OID_USER_DIR/data
-MYSTART=.$PBS_JOBID.start
+MYSTART=$OID_USER_DIR/log/.$PBS_JOBID.start
 date +%s >$MYSTART
 echo runmcx.pl >>$MYSTART
 

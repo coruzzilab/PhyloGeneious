@@ -6,7 +6,7 @@
 
 echo hello for $1
 OID_DATA=$OID_USER_DIR/data
-MYSTART=.$SLURM_JOB_ID.start
+MYSTART=$OID_USER_DIR/log/.$SLURM_JOB_ID.start
 date +%s >$MYSTART
 echo runtntmx.pl $1 $2 $3 $4 >>$MYSTART
 fam=$1

@@ -381,7 +381,7 @@ sub chkfam {
         # new code - .nnnnnn.start has starttime
         $tm = time();
         my $sttm;
-        if ( open( QS, ".$oldqs.start" ) ) {
+        if ( open( QS, "$OID_USER_DIR/log/.$oldqs.start" ) ) {
             $sttm = <QS>;
             close QS;
         }

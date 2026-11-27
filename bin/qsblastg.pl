@@ -415,7 +415,7 @@ while (1) {
         # new code - .nnnnnn.start has starttime
         $t = time();
         my $sttm;
-        if ( open( QS, ".$oldqs.start" ) ) {
+        if ( open( QS, "$OID_USER_DIR/log/.$oldqs.start" ) ) {
             $sttm = <QS>;
             close QS;
         }

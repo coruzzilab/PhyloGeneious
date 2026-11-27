@@ -12,7 +12,7 @@ cat <<EOF >$JOB_SCRIPT
 export PATH=$OID_BIN:$PATH
 
 cd \$OID_USER_DIR
-MYSTART=.\$SLURM_JOB_ID.start
+MYSTART=\$OID_USER_DIR/log/.\$SLURM_JOB_ID.start
 date +%s >\$MYSTART
 echo orthologid.pl \$1 \$2 >>\$MYSTART
 time

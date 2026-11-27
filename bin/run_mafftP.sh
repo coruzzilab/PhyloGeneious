@@ -16,9 +16,9 @@ time
 
 echo hello for mafft
 OID_DATA=$OID_USER_DIR/data
-MYSTART=.$PBS_JOBID.start
-date +%s >$MYSTART
-echo mafft "$arg1" "$arg2" >>$MYSTART
+# MYSTART=.$PBS_JOBID.start
+# date +%s >$MYSTART
+# echo mafft "$arg1" "$arg2" >>$MYSTART
 
 cd $OID_DATA/"$arg1"
 if [[ ! -f oid.nex ]]; then

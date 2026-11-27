@@ -17,7 +17,7 @@ cat <<EOF >$JOB_SCRIPT
 #PATH=$OID_BIN:$PATH
 
 cd \$OID_USER_DIR
-MYSTART=.\$PBS_JOBID.start
+MYSTART=\$OID_USER_DIR/log/.\$PBS_JOBID.start
 date +%s >\$MYSTART
 echo orthologid.pl "\$arg1" "\$arg2" >>\$MYSTART
 date

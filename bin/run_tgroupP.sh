@@ -11,7 +11,7 @@
 #PBS -V
 
 cd $OID_USER_DIR
-MYSTART=.$PBS_JOBID.start
+MYSTART=$OID_USER_DIR/log/.$PBS_JOBID.start
 date +%s >$MYSTART
 echo pooltnt.pl "$arg1" "$arg2" "$arg3" >>$MYSTART
 date
